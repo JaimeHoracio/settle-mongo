@@ -30,7 +30,9 @@ public class JWTSecurityConfig {
     private static String HOST_CLIENT_ALLOWED;
 
     private static String URL_PERMIT_ALL;
-    //final static String[] PERMIT_ALL = new String[]{URL_PERMIT_ALL};
+
+    private static String HEADERS_PERMIT_ALL;
+
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -41,11 +43,13 @@ public class JWTSecurityConfig {
     public JWTSecurityConfig(@Value("${app.server.prefix.endpoint}") final String prefix,
                              @Value("${app.security.host.operation.allowed}") final String option,
                              @Value("${app.security.host.client.allowed}") final String client,
-                             @Value("${app.url.permit.all}") final String uri_permit) {
+                             @Value("${app.url.permit.all}") final String uri_permit,
+                             @Value("${app.security.host.headers.allowed}") final String header_permit) {
         PREFIX_ENDPOINT_SERVER = prefix;
         HOST_CLIENT_METHODS_ALLOWED = option;
         HOST_CLIENT_ALLOWED = client;
         URL_PERMIT_ALL = uri_permit;
+        HEADERS_PERMIT_ALL = header_permit;
     }
 
     @Bean
@@ -73,11 +77,12 @@ public class JWTSecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         final String[] listOpt = Arrays.stream((HOST_CLIENT_METHODS_ALLOWED.split(","))).map(String::trim).toArray(String[]::new);
         final String[] listHostClient = Arrays.stream((HOST_CLIENT_ALLOWED.split(","))).map(String::trim).toArray(String[]::new);
+        final String[] listHeadersAccept = Arrays.stream((HEADERS_PERMIT_ALL.split(","))).map(String::trim).toArray(String[]::new);
 
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(listHostClient));
         configuration.setAllowedMethods(List.of(listOpt));//"GET", "POST", "PUT", "DELETE", "OPTIONS"
-        configuration.setAllowedHeaders(List.of("Access-Control-Allow-Headers", "Access-Control-Allow-Origin", "Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(List.of(listHeadersAccept));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration(PREFIX_ENDPOINT_SERVER, configuration);
