@@ -8,11 +8,12 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import uy.com.hachebackend.settle.application.services.UserService;
 import uy.com.hachebackend.settle.domain.model.UserDomain;
-import uy.com.hachebackend.settle.infrastructure.dto.ErrorDto;
-import uy.com.hachebackend.settle.infrastructure.dto.UserDto;
 import uy.com.hachebackend.settle.infrastructure.mongo.persistence.SettleRepositoryImpl;
+import uy.com.hachebackend.settle.security.authentication.JWTUtil;
 
 import static uy.com.hachebackend.settle.infrastructure.handlers.HandlerUtils.createErrorResponse;
+import static uy.com.hachebackend.settle.infrastructure.handlers.HandlerUtils.createSuccessResponse;
+import static uy.com.hachebackend.settle.security.authentication.JWTUtil.matchesPassword;
 
 @Slf4j
 @Component
@@ -24,25 +25,28 @@ public class HandlerAuth {
     private final UserService userService;
 
     public Mono<ServerResponse> signUpSettle(final ServerRequest request) {
+        System.out.println("En signUP");
         return request.bodyToMono(UserDomain.class)
                 .flatMap(
                         user -> userService.findUser(user.getEmail(), mongoRepository)
-                        .flatMap(userServer -> ServerResponse.badRequest()
-                                .body(Mono.just(
-                                                ErrorDto.builder()
-                                                        .message("User already exist")
-                                                        .codeError(0).build())
-                                        , ErrorDto.class))
-                        .switchIfEmpty(userService.saveUser(user.getEmail(),
-                                        user.getName(),
-                                        user.getPassword(),
-                                        mongoRepository)
-                                .flatMap(u -> ServerResponse.ok().body(Mono.just(u), UserDto.class))
-                        )
-                        .onErrorResume((error) -> {
-                            log.error(">>>>> Error: {}", error.getMessage());
-                            return createErrorResponse(error.getMessage());
-                        })
+                                .flatMap(userServer -> createErrorResponse("Usuario ya existe."))
+                                .switchIfEmpty(userService.saveUser(user.getEmail(),
+                                                user.getName(),
+                                                user.getPassword(),
+                                                mongoRepository)
+                                        .flatMap(u -> {
+                                            String token = JWTUtil.generateToken(u.getEmail(),
+                                                    u.getName(),
+                                                    u.getPassword(),
+                                                    u.getRoles());
+                                            u.setToken(token);
+                                            return createSuccessResponse(u);
+                                        })
+                                )
+                                .onErrorResume((error) -> {
+                                    log.error(">>>>> Error: {}", error.getMessage());
+                                    return createErrorResponse(error.getMessage());
+                                })
                 )
                 .onErrorResume((error) -> {
                     log.error(">>>>> Error: {}", error.getMessage());
@@ -51,11 +55,23 @@ public class HandlerAuth {
     }
 
     public Mono<ServerResponse> loginSettle(final ServerRequest request) {
+        System.out.println("En signIN");
         return request.bodyToMono(UserDomain.class)
                 .flatMap(
                         user -> userService.findUser(user.getEmail(), mongoRepository)
-                                .flatMap(u -> ServerResponse.ok().body(Mono.just(u), UserDto.class))
-                                .switchIfEmpty(createErrorResponse("User does not exist"))
+                                .flatMap(u -> {
+                                    if (matchesPassword(user.getPassword(), u.getPassword())) {
+                                        String token = JWTUtil.generateToken(u.getEmail(),
+                                                u.getName(),
+                                                u.getPassword(),
+                                                u.getRoles());
+                                        u.setToken(token);
+                                        return createSuccessResponse(u);
+                                    } else {
+                                        return createErrorResponse("Invalid credencial.");
+                                    }
+                                })
+                                .switchIfEmpty(createErrorResponse("Usuario no existe."))
                                 .onErrorResume((error) -> {
                                     log.error(">>>>> Error: {}", error.getMessage());
                                     return createErrorResponse(error.getMessage());
@@ -70,7 +86,6 @@ public class HandlerAuth {
     public Mono<ServerResponse> refreshSettle(final ServerRequest request) {
         return request.bodyToMono(UserDomain.class).flatMap(user -> ServerResponse.ok().body(Mono.just("Login"), String.class));
     }
-
 
 
 }

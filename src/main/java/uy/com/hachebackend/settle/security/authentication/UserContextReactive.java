@@ -39,7 +39,7 @@ public class UserContextReactive implements ServerSecurityContextRepository {
     public Mono<SecurityContext> load(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
 
-        log.info("***** Uri consultada: {} - {} ", request.getMethod(), request.getPath().pathWithinApplication().value() /*, request.getHeaders().getOrigin()*/);
+        log.info("***** Uri: {} - {} ", request.getMethod(), request.getPath().pathWithinApplication().value() /*, request.getHeaders().getOrigin()*/);
 
         // No verifica si se esta consultando sobre los endpoint permitidos.
         if (!this.URL_PERMIT_ALL.contains(request.getPath().pathWithinApplication().value())) {
@@ -48,11 +48,11 @@ public class UserContextReactive implements ServerSecurityContextRepository {
             if (Objects.nonNull(authHeader) && authHeader.startsWith(TOKEN_PREFIX)) {
                 authToken = authHeader.replace(TOKEN_PREFIX, "");
             } else {
-                log.warn(">>>>> Couldn't find Bearer string, will ignore the header.");
+                log.info("***** Sin Token.");
             }
             if (Objects.nonNull(authToken)) {
 
-                log.info("***** con token.");
+                log.info("***** Token.");
 
                 Authentication auth = new UsernamePasswordAuthenticationToken(authToken, authToken);
                 return this.authenticationManager.authenticate(auth).map(SecurityContextImpl::new);

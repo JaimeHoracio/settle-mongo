@@ -4,6 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -18,7 +22,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebFluxSecurity
-//@EnableReactiveMethodSecurity
+@EnableReactiveMethodSecurity
 public class JWTSecurityConfig {
 
     private static String PREFIX_ENDPOINT_SERVER;
@@ -50,25 +54,21 @@ public class JWTSecurityConfig {
         HEADERS_PERMIT_ALL = header_permit;
     }
 
+    @Order(Ordered.HIGHEST_PRECEDENCE)
     @Bean
     public SecurityWebFilterChain filterChain(ServerHttpSecurity http) {
         final String[] listEndPointPermit = Arrays.stream(URL_PERMIT_ALL.split(",")).map(String::trim).toArray(String[]::new);
 
         return http
-                //.cors().configurationSource(corsConfigurationSource()).and()
-                .cors().disable()
-                .csrf().disable()
-                .httpBasic().disable()
-                .authenticationManager(authenticationManager)
-                .securityContextRepository(userContextReactive)
                 .authorizeExchange()
-                // Es importante porque algunos clientes envian OPTIONS para validar si hacepta credenciales el server.
-                // .pathMatchers(HttpMethod.OPTIONS).permitAll()
-                .pathMatchers(listEndPointPermit).permitAll()
+                .pathMatchers(listEndPointPermit).permitAll() // Access-Control-Allow-Origin, Access-Control-Allow-Methods, Access-Control-Allow-Headers, Authorization, Content-Type
                 .anyExchange().authenticated()
                 .and()
-                .authorizeExchange()
-                .and()
+                .csrf().disable()
+                .httpBasic().disable()
+                .cors().configurationSource(corsConfigurationSource()).and()
+                .authenticationManager(authenticationManager)
+                .securityContextRepository(userContextReactive)
                 .build();
     }
 
@@ -87,5 +87,40 @@ public class JWTSecurityConfig {
         source.registerCorsConfiguration(PREFIX_ENDPOINT_SERVER, configuration);
         return source;
     }
+
+    /*
+        @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/resources/**");
+    }
+
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    @Bean
+    SecurityWebFilterChain apiHttpSecurity(ServerHttpSecurity http) {
+        http
+                .securityMatcher(new PathPatternParserServerWebExchangeMatcher("/api/**"))
+                .authorizeExchange((exchanges) -> exchanges
+                        .anyExchange().authenticated()
+                )
+                .oauth2ResourceServer(OAuth2ResourceServerSpec::jwt);
+        return http.build();
+    }
+    */
+
+    /*
+    @Bean
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        http.authorizeExchange()
+                .pathMatchers("/static/**")
+                .permitAll()
+                .and()
+                .csrf().disable()
+                .cors()
+                .authenticationManager(authenticationManager)
+                .securityContextRepository(securityContextRepository)
+                .oauth2ResourceServer(OAuth2ResourceServerSpec::jwt);
+        return http.build();
+    }
+    */
 
 }

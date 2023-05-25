@@ -1,2 +1,0 @@
-"use strict";(self["webpackChunkhache"]=self["webpackChunkhache"]||[]).push([[40],{5040:(e,u,n)=>{n.r(u),n.d(u,{default:()=>o});var l=n(6252),r=n(2262),s=n(7491),a=n(1430),t=n(3708);const c=(0,l.aZ)({__name:"LoginApp",setup(e){return(e,u)=>{const n=(0,l.up)("IonPage");return(0,l.wg)(),(0,l.j4)(n,null,{default:(0,l.w5)((()=>[(0,l.Wm)((0,r.SU)(s.W2),{fullscreen:!0},{default:(0,l.w5)((()=>[(0,l.Wm)(t.Z,{"user-login":(0,r.SU)(a.O)().userStore},null,8,["user-login"])])),_:1})])),_:1})}}}),h=c,o=h}}]);
-//# sourceMappingURL=40.ab7f1941.js.map

@@ -29,6 +29,7 @@ public class HandlerSettle {
     private final SettleService settleService;
 
     public Mono<ServerResponse> addMeetSettle(final ServerRequest request) {
+        System.out.println("En Add Meet");
         return request.bodyToMono(MeetRequest.class)
                 .flatMap(meetRequest -> {
                     String idUser = meetRequest.getIdUser();
@@ -51,6 +52,7 @@ public class HandlerSettle {
     }
 
     public Mono<ServerResponse> updateMeetSettle(final ServerRequest request) {
+        System.out.println("En Update Meet");
         return request.bodyToMono(MeetRequest.class)
                 .flatMap(meetRequest -> {
                     String idUser = meetRequest.getIdUser();
@@ -73,7 +75,45 @@ public class HandlerSettle {
 
     }
 
+    public Mono<ServerResponse> closeMeetSettle(final ServerRequest request) {
+        System.out.println("En close Meet");
+        return request.bodyToMono(MeetRequest.class)
+                .flatMap(meetRequest -> {
+                    String idUser = meetRequest.getIdUser();
+                    String idMeet = meetRequest.getMeet().getIdMeet();
+
+                    log.info("Parametros close meet: {} - {}", idUser, idMeet);
+
+                    if (Objects.nonNull(idUser) && Objects.nonNull(idMeet)) {
+                        return settleService.closeMeetSettle(idUser, idMeet, mongoRepository)
+                                .flatMap(user -> ServerResponse.ok().body(Mono.just("Encuentro cerrado."), String.class))
+                                .switchIfEmpty(ServerResponse.ok()
+                                        .body(Mono.just(ErrorDto.builder()
+                                                .message("No hubo cambios.")
+                                                .codeError(0).build()), ErrorDto.class))
+                                .onErrorResume((error) -> {
+                                    log.error(">>>>> Error 1: {}", error.getMessage());
+                                    return ServerResponse.badRequest()
+                                            .body(Mono.just(ErrorDto.builder().message(error.getMessage()).codeError(0).build()),
+                                                    ErrorDto.class);
+                                });
+                    } else {
+                        return ServerResponse.badRequest()
+                                .body(Mono.just(ErrorDto.builder().message("Usuario no encontrado").codeError(0).build()),
+                                        ErrorDto.class);
+                    }
+                })
+                .onErrorResume((error) -> {
+                    log.error(">>>>> Error: {}", error.getMessage());
+                    return ServerResponse.badRequest()
+                            .body(Mono.just(ErrorDto.builder().message(error.getMessage()).codeError(0).build()),
+                                    ErrorDto.class);
+                });
+
+    }
+
     public Mono<ServerResponse> removeMeetSettle(final ServerRequest request) {
+        System.out.println("En Remove Meet");
         return request.bodyToMono(MeetRequest.class)
                 .flatMap(meetRequest -> {
                     String idUser = meetRequest.getIdUser();
@@ -112,6 +152,7 @@ public class HandlerSettle {
     }
 
     public Mono<ServerResponse> addBillSettle(final ServerRequest request) {
+        System.out.println("En Add Bill");
         return request.bodyToMono(BillRequest.class)
                 .flatMap(billRequest ->
                 {
@@ -123,32 +164,24 @@ public class HandlerSettle {
 
                     if (Objects.nonNull(idUser) && Objects.nonNull(idMeet)) {
                         return settleService.addBillListMeetSettle(idUser, idMeet, BillMapper.INSTANCE.convertDtoToDomain(bill), mongoRepository)
-                                .flatMap(user -> ServerResponse.ok().body(Mono.just("Pago agregado."), String.class))
-                                .switchIfEmpty(ServerResponse.ok()
-                                        .body(Mono.just(ErrorDto.builder()
-                                                .message("No hubo cambios.")
-                                                .codeError(0).build()), ErrorDto.class))
+                                .flatMap(user -> createSuccessResponse("Pago agregado."))
+                                .switchIfEmpty(createErrorResponse("No hubo cambios."))
                                 .onErrorResume((error) -> {
                                     log.error(">>>>> Error 1: {}", error.getMessage());
-                                    return ServerResponse.badRequest()
-                                            .body(Mono.just(ErrorDto.builder().message(error.getMessage()).codeError(0).build()),
-                                                    ErrorDto.class);
+                                    return createErrorResponse(error.getMessage());
                                 });
                     } else {
-                        return ServerResponse.badRequest()
-                                .body(Mono.just(ErrorDto.builder().message("Usuario no encontrado").codeError(0).build()),
-                                        ErrorDto.class);
+                        return createErrorResponse("Usuario no encontrado");
                     }
                 })
                 .onErrorResume((error) -> {
                     log.error(">>>>> Error: {}", error.getMessage());
-                    return ServerResponse.badRequest()
-                            .body(Mono.just(ErrorDto.builder().message(error.getMessage()).codeError(0).build()),
-                                    ErrorDto.class);
+                    return createErrorResponse(error.getMessage());
                 });
     }
 
     public Mono<ServerResponse> updateBillSettle(final ServerRequest request) {
+        System.out.println("En Update Bill");
         return request.bodyToMono(BillRequest.class)
                 .flatMap(billRequest -> {
                     String idUser = billRequest.getIdUser();
@@ -158,27 +191,21 @@ public class HandlerSettle {
                     log.info("Parametros add bill: {} - {} - {}", idUser, idMeet, bill.getReference());
 
                     return settleService.updateBillSettle(idUser, idMeet, BillMapper.INSTANCE.convertDtoToDomain(bill), mongoRepository)
-                            .flatMap(user -> ServerResponse.ok().body(Mono.just("Pago modificado."), String.class))
-                            .switchIfEmpty(ServerResponse.ok()
-                                    .body(Mono.just(ErrorDto.builder()
-                                            .message("No hubo cambios.")
-                                            .codeError(0).build()), ErrorDto.class))
+                            .flatMap(user -> createSuccessResponse("Pago modificado."))
+                            .switchIfEmpty(createErrorResponse("No hubo cambios."))
                             .onErrorResume((error) -> {
                                 log.error(">>>>> Error 1: {}", error.getMessage());
-                                return ServerResponse.badRequest()
-                                        .body(Mono.just(ErrorDto.builder().message(error.getMessage()).codeError(0).build()),
-                                                ErrorDto.class);
+                                return createErrorResponse(error.getMessage());
                             });
                 })
                 .onErrorResume((error) -> {
                     log.error(">>>>> Error 2: {}", error.getMessage());
-                    return ServerResponse.badRequest()
-                            .body(Mono.just(ErrorDto.builder().message(error.getMessage()).codeError(0).build()),
-                                    ErrorDto.class);
+                    return createErrorResponse(error.getMessage());
                 });
     }
 
     public Mono<ServerResponse> removeBillSettle(final ServerRequest request) {
+        System.out.println("En Remove Bill");
         return request.bodyToMono(BillRequest.class)
                 .flatMap(billRequest -> {
                             String idUser = billRequest.getIdUser();
@@ -189,29 +216,20 @@ public class HandlerSettle {
 
                             if (Objects.nonNull(idUser) && Objects.nonNull(idMeet) && Objects.nonNull(idBill)) {
                                 return settleService.removeBillSettle(idUser, idMeet, idBill, mongoRepository)
-                                        .flatMap(user -> ServerResponse.ok().body(Mono.just("Pago eliminado."), String.class))
-                                        .switchIfEmpty(ServerResponse.ok()
-                                                .body(Mono.just(ErrorDto.builder()
-                                                        .message("No hubo cambios.")
-                                                        .codeError(0).build()), ErrorDto.class))
+                                        .flatMap(user -> createSuccessResponse("Pago eliminado."))
+                                        .switchIfEmpty(createErrorResponse("No hubo cambios."))
                                         .onErrorResume((error) -> {
                                             log.error(">>>>> Error 1: {}", error.getMessage());
-                                            return ServerResponse.badRequest()
-                                                    .body(Mono.just(ErrorDto.builder().message(error.getMessage()).codeError(0).build()),
-                                                            ErrorDto.class);
+                                            return createErrorResponse(error.getMessage());
                                         });
                             } else {
-                                return ServerResponse.badRequest()
-                                        .body(Mono.just(ErrorDto.builder().message("Usuario no encontrado").codeError(0).build()),
-                                                ErrorDto.class);
+                                return createErrorResponse("Usuario no encontrado");
                             }
                         }
                 )
                 .onErrorResume((error) -> {
                     log.error(">>>>> Error: {}", error.getMessage());
-                    return ServerResponse.badRequest()
-                            .body(Mono.just(ErrorDto.builder().message(error.getMessage()).codeError(0).build()),
-                                    ErrorDto.class);
+                    return createErrorResponse(error.getMessage());
                 });
 
     }

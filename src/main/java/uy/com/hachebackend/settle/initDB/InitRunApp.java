@@ -30,9 +30,8 @@ public class InitRunApp implements CommandLineRunner {
 
         CurrencyDto[] list = new CurrencyDto[]{currencyUy, currencyAr, currencyBr, currencyCh, currencyUsa, currencyEuro};
         for (CurrencyDto c : list) {
-            handlerCurrency.saveCurrencyIso(c.getCode(), c.getName(), c.getNum(), c.getCountry())
-                    .subscribe(currency -> System.out.println(">>>> Currency saved: " + c.getName()));
+            handlerCurrency.saveCurrencyIso(c.getCode(), c.getName(), c.getNum(), c.getCountry());
         }
-
+        System.out.println(">>>> Monedas cargadas.");
     }
 }

@@ -25,6 +25,7 @@ public class HandlerCurrency {
     }
 
     public Mono<ServerResponse> getAllCurrency(ServerRequest request) {
+        System.out.println("En Currency All");
         return currencyService.getAllCurrency(currencyRepository)
                 .collectList()
                 .flatMap(currency -> createSuccessResponse(currency))

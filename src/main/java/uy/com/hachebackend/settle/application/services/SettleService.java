@@ -22,6 +22,10 @@ public class SettleService {
         return userPesist.updateMeetSettle(idUser, meet);
     }
 
+    public Mono<UserDomain> closeMeetSettle(final String idUser, final String idMeet, final IUserPersist userPesist) {
+        return userPesist.closeMeetSettle(idUser, idMeet);
+    }
+
     public Mono<UserDomain> removeMeetSettle(final String idUser, final String idMeet, final IUserPersist userPesist) {
         return userPesist.removeMeetSettle(idUser, idMeet);
     }

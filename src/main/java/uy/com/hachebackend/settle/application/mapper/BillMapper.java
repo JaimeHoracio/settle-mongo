@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import uy.com.hachebackend.settle.domain.model.BillDomain;
 import uy.com.hachebackend.settle.infrastructure.dto.BillDto;
+import uy.com.hachebackend.settle.infrastructure.mongo.entity.BillEntity;
 
 @Mapper
 public interface BillMapper {
@@ -12,7 +13,7 @@ public interface BillMapper {
 
     BillDomain convertDtoToDomain(final BillDto dto);
 
-    BillDto convertDomainToEntity(final BillDomain dto);
+    BillEntity convertDomainToEntity(final BillDomain dto);
 
 
 }

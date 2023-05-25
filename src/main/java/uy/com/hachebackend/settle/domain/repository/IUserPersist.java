@@ -17,6 +17,8 @@ public interface IUserPersist {
 
     Mono<UserDomain> updateMeetSettle(final String idUser, final MeetDomain meet);
 
+    Mono<UserDomain> closeMeetSettle(final String idUser, final String idMeet);
+
     Mono<UserDomain> removeMeetSettle(final String idUser, final String idMeet);
 
     Mono<UserDomain> addBillListMeetSettle(final String idUser, final String meet, final BillDomain bill);

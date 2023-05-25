@@ -22,6 +22,11 @@ public class SettleRouter {
     }
 
     @Bean
+    public RouterFunction<ServerResponse> closeMeetSettle(HandlerSettle handlerSettle) {
+        return RouterFunctions.route().POST("/api/hache/settle/meet/close", handlerSettle::closeMeetSettle).build();
+    }
+
+    @Bean
     public RouterFunction<ServerResponse> removeMeetSettle(HandlerSettle handlerSettle) {
         return RouterFunctions.route().DELETE("/api/hache/settle/meet", handlerSettle::removeMeetSettle).build();
     }
