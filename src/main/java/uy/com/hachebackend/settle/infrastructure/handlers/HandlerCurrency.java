@@ -7,8 +7,9 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import uy.com.hachebackend.settle.application.services.CurrencyService;
 import uy.com.hachebackend.settle.infrastructure.mongo.persistence.CurrencyRepositoryImpl;
-import uy.com.hachebackend.settle.infrastructure.dto.CurrencyDto;
-import uy.com.hachebackend.settle.infrastructure.dto.ErrorDto;
+
+import static uy.com.hachebackend.settle.infrastructure.handlers.HandlerUtils.createErrorResponse;
+import static uy.com.hachebackend.settle.infrastructure.handlers.HandlerUtils.createSuccessResponse;
 
 @Component
 @RequiredArgsConstructor
@@ -19,26 +20,14 @@ public class HandlerCurrency {
 
     public Mono<ServerResponse> saveCurrencyIso(final String code, final String name, final Integer num, final String country) {
         return currencyService.saveCurrency(code, name, num, country, currencyRepository)
-                .flatMap(currency -> ServerResponse.ok().body(Mono.just(currency), CurrencyDto.class))
-                .onErrorResume((error) ->
-                        ServerResponse.badRequest()
-                                .body(Mono.just(
-                                        ErrorDto.builder()
-                                                .message("Error al obtener la moneda" + error.getMessage())
-                                                .codeError(0)
-                                                .build()), ErrorDto.class));
+                .flatMap(currency -> createSuccessResponse(currency))
+                .onErrorResume((error) -> createErrorResponse("Error al guardar la moneda" + error.getMessage()));
     }
 
     public Mono<ServerResponse> getAllCurrency(ServerRequest request) {
         return currencyService.getAllCurrency(currencyRepository)
                 .collectList()
-                .flatMap(currency -> ServerResponse.ok().body(Mono.just(currency), CurrencyDto.class))
-                .onErrorResume((error) ->
-                        ServerResponse.badRequest()
-                                .body(Mono.just(
-                                        ErrorDto.builder()
-                                                .message("Error al obtener la moneda: " + error.getMessage())
-                                                .codeError(0)
-                                                .build()), ErrorDto.class));
+                .flatMap(currency -> createSuccessResponse(currency))
+                .onErrorResume((error) -> createErrorResponse("Error al obtener la moneda" + error.getMessage()));
     }
 }
