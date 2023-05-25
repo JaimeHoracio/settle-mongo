@@ -17,6 +17,9 @@ import uy.com.hachebackend.settle.infrastructure.mongo.persistence.SettleReposit
 
 import java.util.Objects;
 
+import static uy.com.hachebackend.settle.infrastructure.handlers.HandlerUtils.createErrorResponse;
+import static uy.com.hachebackend.settle.infrastructure.handlers.HandlerUtils.createSuccessResponse;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -34,24 +37,16 @@ public class HandlerSettle {
                     log.info("Parametros add meet: {} - {}", idUser, idMeet);
 
                     return settleService.addMeetSettle(idUser, MeetMapper.INSTANCE.convertDtoToDomain(meetRequest.getMeet()), mongoRepository)
-                            .flatMap(user -> ServerResponse.ok()
-                                    .body(Mono.just("Encuentro agregado."), String.class))
-                            .switchIfEmpty(ServerResponse.ok()
-                                    .body(Mono.just(ErrorDto.builder()
-                                            .message("No hubo cambios.")
-                                            .codeError(0).build()), ErrorDto.class))
+                            .flatMap(user -> createSuccessResponse("Encuentro agregado."))
+                            .switchIfEmpty(createErrorResponse("No hubo cambios."))
                             .onErrorResume((error) -> {
                                 log.error(">>>>> Error 1: {}", error.getMessage());
-                                return ServerResponse.badRequest()
-                                        .body(Mono.just(ErrorDto.builder().message(error.getMessage()).codeError(0).build()),
-                                                ErrorDto.class);
+                                return createErrorResponse(error.getMessage());
                             });
                 })
                 .onErrorResume((error) -> {
                     log.error(">>>>> Error: {}", error.getMessage());
-                    return ServerResponse.badRequest()
-                            .body(Mono.just(ErrorDto.builder().message(error.getMessage()).codeError(0).build()),
-                                    ErrorDto.class);
+                    return createErrorResponse(error.getMessage());
                 });
     }
 
@@ -64,24 +59,16 @@ public class HandlerSettle {
                     log.info("Parametros update meet: {} - {}", idUser, idMeet);
 
                     return settleService.updateMeetSettle(idUser, MeetMapper.INSTANCE.convertDtoToDomain(meetRequest.getMeet()), mongoRepository)
-                            .flatMap(user -> ServerResponse.ok()
-                                    .body(Mono.just("Encuentro modificado."), String.class))
-                            .switchIfEmpty(ServerResponse.ok()
-                                    .body(Mono.just(ErrorDto.builder()
-                                            .message("No hubo cambios.")
-                                            .codeError(0).build()), ErrorDto.class))
+                            .flatMap(user -> createSuccessResponse("Encuentro modificado."))
+                            .switchIfEmpty(createErrorResponse("No hubo cambios."))
                             .onErrorResume((error) -> {
                                 log.error(">>>>> Error 1: {}", error.getMessage());
-                                return ServerResponse.badRequest()
-                                        .body(Mono.just(ErrorDto.builder().message(error.getMessage()).codeError(0).build()),
-                                                ErrorDto.class);
+                                return createErrorResponse(error.getMessage());
                             });
                 })
                 .onErrorResume((error) -> {
                     log.error(">>>>> Error: {}", error.getMessage());
-                    return ServerResponse.badRequest()
-                            .body(Mono.just(ErrorDto.builder().message(error.getMessage()).codeError(0).build()),
-                                    ErrorDto.class);
+                    return createErrorResponse(error.getMessage());
                 });
 
     }
