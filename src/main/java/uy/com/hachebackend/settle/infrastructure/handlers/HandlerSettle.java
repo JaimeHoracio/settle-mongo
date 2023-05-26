@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
-import uy.com.hachebackend.settle.application.mapper.BillMapper;
-import uy.com.hachebackend.settle.application.mapper.MeetMapper;
+import uy.com.hachebackend.settle.application.mapper.mongo.BillMapper;
+import uy.com.hachebackend.settle.application.mapper.mongo.MeetMapper;
 import uy.com.hachebackend.settle.application.services.SettleService;
 import uy.com.hachebackend.settle.infrastructure.dto.BillDto;
 import uy.com.hachebackend.settle.infrastructure.dto.BillRequest;
@@ -37,7 +37,7 @@ public class HandlerSettle {
 
                     log.info("Parametros add meet: {} - {}", idUser, idMeet);
 
-                    return settleService.addMeetSettle(idUser, MeetMapper.INSTANCE.convertDtoToDomain(meetRequest.getMeet()), mongoRepository)
+                    return settleService.addMeetSettle(idUser, MeetMapper.INSTANCE.convertDtoToDomainMongo(meetRequest.getMeet()), mongoRepository)
                             .flatMap(user -> createSuccessResponse("Encuentro agregado."))
                             .switchIfEmpty(createErrorResponse("No hubo cambios."))
                             .onErrorResume((error) -> {
@@ -60,7 +60,7 @@ public class HandlerSettle {
 
                     log.info("Parametros update meet: {} - {}", idUser, idMeet);
 
-                    return settleService.updateMeetSettle(idUser, MeetMapper.INSTANCE.convertDtoToDomain(meetRequest.getMeet()), mongoRepository)
+                    return settleService.updateMeetSettle(idUser, MeetMapper.INSTANCE.convertDtoToDomainMongo(meetRequest.getMeet()), mongoRepository)
                             .flatMap(user -> createSuccessResponse("Encuentro modificado."))
                             .switchIfEmpty(createErrorResponse("No hubo cambios."))
                             .onErrorResume((error) -> {
@@ -163,9 +163,9 @@ public class HandlerSettle {
                     log.info("Parametros add bill: {} - {} - {}", idUser, idMeet, bill.getReference());
 
                     if (Objects.nonNull(idUser) && Objects.nonNull(idMeet)) {
-                        return settleService.addBillListMeetSettle(idUser, idMeet, BillMapper.INSTANCE.convertDtoToDomain(bill), mongoRepository)
+                        return settleService.addBillListMeetSettle(idUser, idMeet, BillMapper.INSTANCE.convertDtoToDomainMongo(bill), mongoRepository)
                                 .flatMap(user -> createSuccessResponse("Pago agregado."))
-                                .switchIfEmpty(createErrorResponse("No hubo cambios."))
+                                .switchIfEmpty(createErrorResponse("Pago no agregado."))
                                 .onErrorResume((error) -> {
                                     log.error(">>>>> Error 1: {}", error.getMessage());
                                     return createErrorResponse(error.getMessage());
@@ -190,7 +190,7 @@ public class HandlerSettle {
 
                     log.info("Parametros add bill: {} - {} - {}", idUser, idMeet, bill.getReference());
 
-                    return settleService.updateBillSettle(idUser, idMeet, BillMapper.INSTANCE.convertDtoToDomain(bill), mongoRepository)
+                    return settleService.updateBillSettle(idUser, idMeet, BillMapper.INSTANCE.convertDtoToDomainMongo(bill), mongoRepository)
                             .flatMap(user -> createSuccessResponse("Pago modificado."))
                             .switchIfEmpty(createErrorResponse("No hubo cambios."))
                             .onErrorResume((error) -> {

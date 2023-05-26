@@ -14,6 +14,7 @@ import java.util.List;
 public class BillEntity {
 
     private String idBill;
+    private String idMeet;
     private String reference;
     private Date created;
     private ReceiptContainerEntity receipt;

@@ -3,12 +3,10 @@ package uy.com.hachebackend.settle.application.services;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import uy.com.hachebackend.settle.application.mapper.MeetMapper;
 import uy.com.hachebackend.settle.domain.model.BillDomain;
 import uy.com.hachebackend.settle.domain.model.MeetDomain;
 import uy.com.hachebackend.settle.domain.model.UserDomain;
 import uy.com.hachebackend.settle.domain.repository.IUserPersist;
-import uy.com.hachebackend.settle.infrastructure.dto.MeetRequest;
 
 @Service
 @Slf4j

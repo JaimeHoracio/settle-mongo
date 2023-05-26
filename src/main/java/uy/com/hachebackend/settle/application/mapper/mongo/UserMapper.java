@@ -1,4 +1,4 @@
-package uy.com.hachebackend.settle.application.mapper;
+package uy.com.hachebackend.settle.application.mapper.mongo;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -12,10 +12,8 @@ public interface UserMapper {
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
     //@Mapping(target = "idUser", ignore = true)
-    UserEntity convertDomainToEntity(final UserDomain domain);
-
-    UserDomain convertEntityToDomain(final UserEntity entity);
-
+    UserDomain convertEntityToDomainMongo(final UserEntity entity);
+    
     UserDto convertDomainToDto(final UserDomain domain);
 
 }

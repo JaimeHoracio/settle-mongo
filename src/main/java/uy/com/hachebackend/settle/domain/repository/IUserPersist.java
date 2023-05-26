@@ -11,7 +11,7 @@ public interface IUserPersist {
 
     Mono<UserDomain> findUser(final String idUses);
 
-    Mono<UserDomain> saveUser(final String idUser, final String name, final String password, final List<String> roles);
+    Mono<UserDomain> createUser(final String idUser, final String name, final String password, final List<String> roles);
 
     Mono<UserDomain> addMeetSettle(final String idUser, final MeetDomain meet);
 

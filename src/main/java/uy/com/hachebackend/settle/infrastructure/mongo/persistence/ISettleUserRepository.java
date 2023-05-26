@@ -2,10 +2,12 @@ package uy.com.hachebackend.settle.infrastructure.mongo.persistence;
 
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 import uy.com.hachebackend.settle.infrastructure.mongo.entity.UserEntity;
 
-public interface ISettleRepository extends ReactiveMongoRepository<UserEntity, String> {
+@Repository
+public interface ISettleUserRepository extends ReactiveMongoRepository<UserEntity, String> {
 
     Mono<UserEntity> findById(final String email);
 

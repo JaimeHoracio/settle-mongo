@@ -1,4 +1,4 @@
-package uy.com.hachebackend.settle.application.mapper;
+package uy.com.hachebackend.settle.application.mapper.mongo;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -11,9 +11,8 @@ public interface BillMapper {
 
     BillMapper INSTANCE = Mappers.getMapper(BillMapper.class);
 
-    BillDomain convertDtoToDomain(final BillDto dto);
+    BillDomain convertDtoToDomainMongo(final BillDto dto);
 
-    BillEntity convertDomainToEntity(final BillDomain dto);
-
+    BillEntity convertDomainToEntityMongo(final BillDomain dto);
 
 }

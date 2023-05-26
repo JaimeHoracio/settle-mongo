@@ -3,7 +3,7 @@ package uy.com.hachebackend.settle.application.services;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import uy.com.hachebackend.settle.application.mapper.CurrencyMapper;
+import uy.com.hachebackend.settle.application.mapper.mongo.CurrencyMapper;
 import uy.com.hachebackend.settle.domain.repository.ICurrencyPersist;
 import uy.com.hachebackend.settle.infrastructure.dto.CurrencyDto;
 

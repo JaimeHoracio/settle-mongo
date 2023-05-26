@@ -4,7 +4,6 @@ import lombok.*;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Data
 @ToString
@@ -18,5 +17,5 @@ public class MeetEntity {
     private String name;
     private Date created;
     private Date updated;
-    private List<BillEntity> listBill = new ArrayList<>();
+    private ArrayList<BillEntity> listBill = new ArrayList<>();
 }

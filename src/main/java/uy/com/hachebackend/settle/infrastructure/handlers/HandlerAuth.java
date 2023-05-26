@@ -30,7 +30,7 @@ public class HandlerAuth {
                 .flatMap(
                         user -> userService.findUser(user.getEmail(), mongoRepository)
                                 .flatMap(userServer -> createErrorResponse("Usuario ya existe."))
-                                .switchIfEmpty(userService.saveUser(user.getEmail(),
+                                .switchIfEmpty(userService.createUser(user.getEmail(),
                                                 user.getName(),
                                                 user.getPassword(),
                                                 mongoRepository)

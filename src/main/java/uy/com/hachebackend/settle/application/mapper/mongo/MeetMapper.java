@@ -1,4 +1,4 @@
-package uy.com.hachebackend.settle.application.mapper;
+package uy.com.hachebackend.settle.application.mapper.mongo;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
@@ -11,8 +11,8 @@ public interface MeetMapper {
 
     MeetMapper INSTANCE = Mappers.getMapper(MeetMapper.class);
 
-    MeetDomain convertDtoToDomain(final MeetDto meetDto);
+    MeetDomain convertDtoToDomainMongo(final MeetDto meetDto);
 
-    MeetEntity convertDomainToEntity(final MeetDomain meetDomain);
+    MeetEntity convertDomainToEntityMongo(final MeetDomain meetDomain);
 
 }
