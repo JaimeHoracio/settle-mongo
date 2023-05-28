@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 import uy.com.hachebackend.settle.application.services.UserService;
 import uy.com.hachebackend.settle.domain.model.UserDomain;
+import uy.com.hachebackend.settle.infrastructure.dto.UserDto;
 import uy.com.hachebackend.settle.infrastructure.mongo.persistence.SettleRepositoryImpl;
 import uy.com.hachebackend.settle.security.authentication.JWTUtil;
 
@@ -56,7 +57,7 @@ public class HandlerAuth {
 
     public Mono<ServerResponse> loginSettle(final ServerRequest request) {
         System.out.println("En signIN");
-        return request.bodyToMono(UserDomain.class)
+        return request.bodyToMono(UserDto.class)
                 .flatMap(
                         user -> userService.findUser(user.getEmail(), mongoRepository)
                                 .flatMap(u -> {
@@ -66,6 +67,9 @@ public class HandlerAuth {
                                                 u.getPassword(),
                                                 u.getRoles());
                                         u.setToken(token);
+
+                                        log.info("UserLogin : {}", u);
+
                                         return createSuccessResponse(u);
                                     } else {
                                         return createErrorResponse("Invalid credencial.");

@@ -10,7 +10,7 @@ import lombok.*;
 public class CurrencyEntity {
 
     private String name;
-    private String codeISO;
-    private Integer numISO;
+    private String code;
+    private Integer num;
     private String country;
 }

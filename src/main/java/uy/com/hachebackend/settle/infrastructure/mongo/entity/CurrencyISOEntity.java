@@ -13,8 +13,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class CurrencyISOEntity {
 
     @Id
-    private String codeISO;
+    private String code;
     private String name;
-    private Integer numISO;
+    private Integer num;
     private String country;
 }

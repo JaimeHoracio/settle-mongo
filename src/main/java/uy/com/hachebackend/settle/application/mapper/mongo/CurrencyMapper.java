@@ -12,8 +12,8 @@ public interface CurrencyMapper {
 
     CurrencyMapper INSTANCE = Mappers.getMapper(CurrencyMapper.class);
 
-    @Mapping(source = "currencyDomain.codeISO", target = "code")
-    @Mapping(source = "currencyDomain.numISO", target = "num")
+    //@Mapping(source = "codeISO", target = "code")
+    //@Mapping(source = "numISO", target = "num")
     CurrencyDomain convertEntityToDomainMongo(final CurrencyISOEntity currencyDomain);
 
     CurrencyDto convertDomainToDto(final CurrencyDomain currencyDomain);

@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-@Document("User")
+@Document(collection = "User")
 @Data
 @ToString
 @Builder

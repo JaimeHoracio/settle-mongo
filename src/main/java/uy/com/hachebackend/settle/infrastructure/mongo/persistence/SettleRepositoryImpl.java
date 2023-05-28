@@ -17,7 +17,6 @@ import uy.com.hachebackend.settle.domain.model.BillDomain;
 import uy.com.hachebackend.settle.domain.model.MeetDomain;
 import uy.com.hachebackend.settle.domain.model.UserDomain;
 import uy.com.hachebackend.settle.domain.repository.IUserPersist;
-import uy.com.hachebackend.settle.infrastructure.mongo.entity.BillEntity;
 import uy.com.hachebackend.settle.infrastructure.mongo.entity.MeetEntity;
 import uy.com.hachebackend.settle.infrastructure.mongo.entity.UserEntity;
 
@@ -30,7 +29,6 @@ import java.util.stream.Collectors;
 public class SettleRepositoryImpl implements IUserPersist {
 
     private final ISettleUserRepository userRepository;
-    private final ISettleBillRepository billRepository;
     private final ReactiveMongoTemplate mongoTemplate;
 
     @Override
@@ -45,11 +43,15 @@ public class SettleRepositoryImpl implements IUserPersist {
         return userRepository.save(user).map(UserMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
+    public Mono<UserDomain> updateUser(final UserDomain user) {
+        return Mono.just(user);
+    }
+
     @Override
-    public Mono<UserDomain> addMeetSettle(String idUser, MeetDomain meet) {
+    public Mono<UserDomain> addMeetSettle(String email, MeetDomain meet) {
         //Reseteo la lista de pagos porque lo manejo aparte
         meet.setListBill(new ArrayList<>());
-        Query query = new Query(Criteria.where("_id").is(idUser));
+        Query query = new Query(Criteria.where("_id").is(email));
         Update addMeet = new Update().addToSet("settle.listMeet", MeetMapper.INSTANCE.convertDomainToEntityMongo(meet));
 
         return mongoTemplate.findAndModify(query, addMeet, FindAndModifyOptions.options().returnNew(true),
@@ -57,12 +59,12 @@ public class SettleRepositoryImpl implements IUserPersist {
     }
 
     @Override
-    public Mono<UserDomain> updateMeetSettle(final String idUser, final MeetDomain meet) {
-        return updateMeetDB(idUser, MeetMapper.INSTANCE.convertDomainToEntityMongo(meet)).map(UserMapper.INSTANCE::convertEntityToDomainMongo);
+    public Mono<UserDomain> updateMeetSettle(final String email, final MeetDomain meet) {
+        return updateMeetDB(email, MeetMapper.INSTANCE.convertDomainToEntityMongo(meet)).map(UserMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
-    public Mono<UserEntity> updateMeetDB(final String idUser, final MeetEntity meet) {
-        Query query = new Query(Criteria.where("_id").is(idUser))
+    public Mono<UserEntity> updateMeetDB(final String email, final MeetEntity meet) {
+        Query query = new Query(Criteria.where("_id").is(email))
                 .addCriteria(Criteria.where("settle.listMeet.idMeet").is(meet.getIdMeet()));
 
         Update updateMeet = new Update().set("settle.listMeet.$", meet);
@@ -71,8 +73,8 @@ public class SettleRepositoryImpl implements IUserPersist {
     }
 
     @Override
-    public Mono<UserDomain> closeMeetSettle(String idUser, String idMeet) {
-        Query query = new Query(Criteria.where("_id").is(idUser))
+    public Mono<UserDomain> closeMeetSettle(String email, String idMeet) {
+        Query query = new Query(Criteria.where("_id").is(email))
                 .addCriteria(Criteria.where("settle.listMeet.idMeet").is(idMeet));
 
         Update closeMeet = new Update().set("settle.listMeet.$.active", false).set("settle.listMeet.$.updated", new Date());
@@ -84,7 +86,7 @@ public class SettleRepositoryImpl implements IUserPersist {
                 .flatMap(meet -> {
                     meet.setActive(false);
                     meet.setUpdated(new Date());
-                    return updateMeetDB(idUser, meet).map(UserMapper.INSTANCE::convertEntityToDomainMongo);
+                    return updateMeetDB(email, meet).map(UserMapper.INSTANCE::convertEntityToDomainMongo);
                 })
                 .onErrorResume((error) -> {
                     log.error(">>>>> Error finding Meet Manual: {}", error.getMessage());
@@ -94,8 +96,8 @@ public class SettleRepositoryImpl implements IUserPersist {
     }
 
     @Override
-    public Mono<UserDomain> removeMeetSettle(String idUser, String idMeet) {
-        Query query = new Query(Criteria.where("_id").is(idUser));
+    public Mono<UserDomain> removeMeetSettle(String email, String idMeet) {
+        Query query = new Query(Criteria.where("_id").is(email));
 
         Update removeMeet = new Update().pull("settle.listMeet", new BasicDBObject("idMeet", idMeet));
 
@@ -105,9 +107,9 @@ public class SettleRepositoryImpl implements IUserPersist {
 
     /*------------------- BILL --------------------*/
     @Override
-    public Mono<UserDomain> addBillListMeetSettle(final String idUser, final String idMeet, final BillDomain bill) {
-        return findUser(idUser)
-                .flatMap(user -> {
+    public Mono<UserDomain> addBillListMeetSettle(final String email, final String idMeet, final BillDomain bill) {
+        return findUser(email)
+                .map(user -> {
                             Optional<MeetDomain> me = getMeetById(user, idMeet);
                             if (me.isPresent()) {
                                 MeetDomain meet = me.get();
@@ -115,18 +117,19 @@ public class SettleRepositoryImpl implements IUserPersist {
                                     meet.setListBill(new ArrayList<>());
                                 }
                                 meet.getListBill().add(bill);
-                                return updateMeetSettle(idUser, meet);
+                                return meet;
                             }
                             return Mono.empty();
                         }
                 )
+                .flatMap(meet -> updateMeetSettle(email, (MeetDomain) meet))
                 .onErrorResume((error) -> {
                     log.error(">>>>> Error Add Bill: {}", error.getMessage());
-                    return addBillToMeetListManualMode(idUser, idMeet, bill);
+                    return addBillToMeetListManualMode(email, idMeet, bill);
                 });
         /** No se cual es el problema pero lo que hago no funciona no logro guardar un pago, lo hago manual*/
         /*
-        Query query = new Query(Criteria.where("_id").is(idUser))
+        Query query = new Query(Criteria.where("_id").is(email))
                 .addCriteria(Criteria.where("settle.listMeet.idMeet").is(idMeet));
 
         Update addBillListMeet = new Update().addToSet("settle.listMeet.$[index].listBill", BillMapper.INSTANCE.convertDomainToEntityMongo(bill))
@@ -135,14 +138,14 @@ public class SettleRepositoryImpl implements IUserPersist {
         return mongoTemplate.updateFirst(query, addBillListMeet, UserEntity.class)
                 .flatMap(result -> {
                     if (result.getModifiedCount() > 0) {
-                        return Mono.just(UserDomain.builder().idUser(idUser).build());
+                        return Mono.just(UserDomain.builder().email(email).build());
                     } else {
-                        return addBillToMeetListManualMode(idUser, idMeet, bill);
+                        return addBillToMeetListManualMode(email, idMeet, bill);
                     }
                 })
                 .onErrorResume((error) -> {
                     log.error(">>>>> Error Add Bill: {}", error.getMessage());
-                    return addBillToMeetListManualMode(idUser, idMeet, bill);
+                    return addBillToMeetListManualMode(email, idMeet, bill);
                 });
          */
     }
@@ -153,8 +156,8 @@ public class SettleRepositoryImpl implements IUserPersist {
     }
 
     @Override
-    public Mono<UserDomain> updateBillListMeetSettle(String idUser, String idMeet, BillDomain bill) {
-        return findUser(idUser)
+    public Mono<UserDomain> updateBillListMeetSettle(String email, String idMeet, BillDomain bill) {
+        return findUser(email)
                 .flatMap(user -> {
                             Optional<MeetDomain> me = getMeetById(user, idMeet);
                             if (me.isPresent()) {
@@ -163,7 +166,7 @@ public class SettleRepositoryImpl implements IUserPersist {
                                     meet.setListBill(meet.getListBill().stream().parallel()
                                             .map(b -> b.getIdBill().equals(bill.getIdBill()) ? bill : b)
                                             .collect(Collectors.toList()));
-                                    return updateMeetSettle(idUser, meet);
+                                    return updateMeetSettle(email, meet);
                                 }
                             }
                             return Mono.empty();
@@ -171,10 +174,10 @@ public class SettleRepositoryImpl implements IUserPersist {
                 )
                 .onErrorResume((error) -> {
                     log.error(">>>>> Error Add Bill: {}", error.getMessage());
-                    return addBillToMeetListManualMode(idUser, idMeet, bill);
+                    return addBillToMeetListManualMode(email, idMeet, bill);
                 });
         /*
-        Query query = new Query(Criteria.where("_id").is(idUser))
+        Query query = new Query(Criteria.where("_id").is(email))
                 .addCriteria(Criteria.where("settle.listMeet.idMeet").is(idMeet))
                 .addCriteria(Criteria.where("settle.listMeet.listBill.idBill").is(bill.getIdBill()));
 
@@ -187,8 +190,8 @@ public class SettleRepositoryImpl implements IUserPersist {
     }
 
     @Override
-    public Mono<UserDomain> removeBillListMeetSettle(String idUser, String idMeet, String idBill) {
-        return findUser(idUser)
+    public Mono<UserDomain> removeBillListMeetSettle(String email, String idMeet, String idBill) {
+        return findUser(email)
                 .flatMap(user -> {
                             Optional<MeetDomain> me = getMeetById(user, idMeet);
                             if (me.isPresent()) {
@@ -197,7 +200,7 @@ public class SettleRepositoryImpl implements IUserPersist {
                                     meet.setListBill(meet.getListBill().stream().parallel()
                                             .filter(b -> !b.getIdBill().equals(idBill))
                                             .collect(Collectors.toList()));
-                                    return updateMeetSettle(idUser, meet);
+                                    return updateMeetSettle(email, meet);
                                 }
                             }
                             return Mono.empty();
@@ -208,7 +211,7 @@ public class SettleRepositoryImpl implements IUserPersist {
                     return Mono.empty();
                 });
         /*
-        Query query = new Query(Criteria.where("_id").is(idUser))
+        Query query = new Query(Criteria.where("_id").is(email))
                 .addCriteria(Criteria.where("settle.listMeet.idMeet").is(idMeet));
 
         Update removeBillListMeet = new Update().pull("settle.listMeet.$.listBill", new BasicDBObject("idBill", idBill));
@@ -218,9 +221,9 @@ public class SettleRepositoryImpl implements IUserPersist {
          */
     }
 
-    private Mono<UserDomain> addBillToMeetListManualMode(final String idUser, final String idMeet, final BillDomain bill) {
+    private Mono<UserDomain> addBillToMeetListManualMode(final String email, final String idMeet, final BillDomain bill) {
         log.warn(">>>>> Manual action to Add Bill in Meet is activated.");
-        Query query = new Query(Criteria.where("_id").is(idUser))
+        Query query = new Query(Criteria.where("_id").is(email))
                 .addCriteria(Criteria.where("settle.listMeet").elemMatch(Criteria.where("idMeet").is(idMeet)));
 
         return mongoTemplate.findOne(query, MeetEntity.class)
@@ -229,7 +232,7 @@ public class SettleRepositoryImpl implements IUserPersist {
                         meet.setListBill(new ArrayList<>());
                     }
                     meet.getListBill().add(BillMapper.INSTANCE.convertDomainToEntityMongo(bill));
-                    return updateMeetDB(idUser, meet).map(UserMapper.INSTANCE::convertEntityToDomainMongo);
+                    return updateMeetDB(email, meet).map(UserMapper.INSTANCE::convertEntityToDomainMongo);
                 })
                 .onErrorResume((error) -> {
                     log.error(">>>>> Error finding Meet Manual: {}", error.getMessage());

@@ -17,7 +17,7 @@ public class CurrencyRepositoryImpl implements ICurrencyPersist {
 
     @Override
     public Mono<CurrencyDomain> saveCurrency(final String code, final String name, final Integer num, final String country) {
-        CurrencyISOEntity currency = CurrencyISOEntity.builder().codeISO(code).name(name).numISO(num).country(country).build();
+        CurrencyISOEntity currency = CurrencyISOEntity.builder().code(code).name(name).num(num).country(country).build();
         return currencyRepository.save(currency).map(CurrencyMapper.INSTANCE::convertEntityToDomainMongo);
     }
 

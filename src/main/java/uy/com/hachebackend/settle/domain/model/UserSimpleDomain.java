@@ -9,6 +9,6 @@ import lombok.*;
 @AllArgsConstructor
 public class UserSimpleDomain {
 
-    private String idUser;
+    private String email;
     private String name;
 }

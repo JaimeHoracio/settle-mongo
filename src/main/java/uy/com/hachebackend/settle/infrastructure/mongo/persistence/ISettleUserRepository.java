@@ -12,7 +12,7 @@ public interface ISettleUserRepository extends ReactiveMongoRepository<UserEntit
     Mono<UserEntity> findById(final String email);
 
     // No tiene sentido filtrar por meet porque te devuelve el usuario entero y luego hay que buscarlo nuevamente.
-    @Query(value = "{'_id': ?0, 'settle.listMeet.idMeet':?1 }")
-    Mono<UserEntity> findByIdUserIdMeet(final String email, final String idMeet);
+    //@Query(value = "{'_id': ?0, 'settle.listMeet.idMeet':?1 }")
+    //Mono<UserEntity> findByemailIdMeet(final String email, final String idMeet);
 
 }

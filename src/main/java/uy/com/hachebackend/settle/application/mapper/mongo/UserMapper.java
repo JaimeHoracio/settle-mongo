@@ -11,7 +11,7 @@ public interface UserMapper {
 
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
-    //@Mapping(target = "idUser", ignore = true)
+    //@Mapping(target = "email", ignore = true)
     UserDomain convertEntityToDomainMongo(final UserEntity entity);
     
     UserDto convertDomainToDto(final UserDomain domain);

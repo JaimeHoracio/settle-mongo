@@ -8,7 +8,7 @@ import uy.com.hachebackend.settle.infrastructure.handlers.HandlerCurrency;
 import uy.com.hachebackend.settle.infrastructure.handlers.HandlerUser;
 
 @Component
-public class InitRunApp implements CommandLineRunner {
+public class InitRunApp  {
 
     @Autowired
     private HandlerUser handlerUser;
@@ -16,8 +16,7 @@ public class InitRunApp implements CommandLineRunner {
     @Autowired
     private HandlerCurrency handlerCurrency;
 
-    @Override
-    public void run(String... args) {
+    public void runInit() {
         handlerUser.initUserAdmin();
 
         //Guardo algunas monedas

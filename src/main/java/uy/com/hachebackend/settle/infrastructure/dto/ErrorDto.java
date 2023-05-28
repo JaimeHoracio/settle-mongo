@@ -1,14 +1,14 @@
 package uy.com.hachebackend.settle.infrastructure.dto;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 
 import java.io.Serializable;
 
 @Data
 @Builder
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class ErrorDto implements Serializable {
 
     private String message;

@@ -14,6 +14,7 @@ import uy.com.hachebackend.settle.infrastructure.dto.BillRequest;
 import uy.com.hachebackend.settle.infrastructure.dto.ErrorDto;
 import uy.com.hachebackend.settle.infrastructure.dto.MeetRequest;
 import uy.com.hachebackend.settle.infrastructure.mongo.persistence.SettleRepositoryImpl;
+import uy.com.hachebackend.settle.initDB.InitRunApp;
 
 import java.util.Objects;
 
@@ -27,17 +28,23 @@ public class HandlerSettle {
 
     private final SettleRepositoryImpl mongoRepository;
     private final SettleService settleService;
+    private final InitRunApp initRunApp;
+
+    public Mono<ServerResponse> initSettle(final ServerRequest request) {
+        initRunApp.runInit();
+        return createSuccessResponse("Settle inicializado.");
+    }
 
     public Mono<ServerResponse> addMeetSettle(final ServerRequest request) {
         System.out.println("En Add Meet");
         return request.bodyToMono(MeetRequest.class)
                 .flatMap(meetRequest -> {
-                    String idUser = meetRequest.getIdUser();
+                    String email = meetRequest.getEmail();
                     String idMeet = meetRequest.getMeet().getIdMeet();
 
-                    log.info("Parametros add meet: {} - {}", idUser, idMeet);
+                    log.info("Parametros add meet: {} - {}", email, idMeet);
 
-                    return settleService.addMeetSettle(idUser, MeetMapper.INSTANCE.convertDtoToDomainMongo(meetRequest.getMeet()), mongoRepository)
+                    return settleService.addMeetSettle(email, MeetMapper.INSTANCE.convertDtoToDomainMongo(meetRequest.getMeet()), mongoRepository)
                             .flatMap(user -> createSuccessResponse("Encuentro agregado."))
                             .switchIfEmpty(createErrorResponse("No hubo cambios."))
                             .onErrorResume((error) -> {
@@ -55,12 +62,12 @@ public class HandlerSettle {
         System.out.println("En Update Meet");
         return request.bodyToMono(MeetRequest.class)
                 .flatMap(meetRequest -> {
-                    String idUser = meetRequest.getIdUser();
+                    String email = meetRequest.getEmail();
                     String idMeet = meetRequest.getMeet().getIdMeet();
 
-                    log.info("Parametros update meet: {} - {}", idUser, idMeet);
+                    log.info("Parametros update meet: {} - {}", email, idMeet);
 
-                    return settleService.updateMeetSettle(idUser, MeetMapper.INSTANCE.convertDtoToDomainMongo(meetRequest.getMeet()), mongoRepository)
+                    return settleService.updateMeetSettle(email, MeetMapper.INSTANCE.convertDtoToDomainMongo(meetRequest.getMeet()), mongoRepository)
                             .flatMap(user -> createSuccessResponse("Encuentro modificado."))
                             .switchIfEmpty(createErrorResponse("No hubo cambios."))
                             .onErrorResume((error) -> {
@@ -79,13 +86,13 @@ public class HandlerSettle {
         System.out.println("En close Meet");
         return request.bodyToMono(MeetRequest.class)
                 .flatMap(meetRequest -> {
-                    String idUser = meetRequest.getIdUser();
+                    String email = meetRequest.getEmail();
                     String idMeet = meetRequest.getMeet().getIdMeet();
 
-                    log.info("Parametros close meet: {} - {}", idUser, idMeet);
+                    log.info("Parametros close meet: {} - {}", email, idMeet);
 
-                    if (Objects.nonNull(idUser) && Objects.nonNull(idMeet)) {
-                        return settleService.closeMeetSettle(idUser, idMeet, mongoRepository)
+                    if (Objects.nonNull(email) && Objects.nonNull(idMeet)) {
+                        return settleService.closeMeetSettle(email, idMeet, mongoRepository)
                                 .flatMap(user -> ServerResponse.ok().body(Mono.just("Encuentro cerrado."), String.class))
                                 .switchIfEmpty(ServerResponse.ok()
                                         .body(Mono.just(ErrorDto.builder()
@@ -116,15 +123,15 @@ public class HandlerSettle {
         System.out.println("En Remove Meet");
         return request.bodyToMono(MeetRequest.class)
                 .flatMap(meetRequest -> {
-                    String idUser = meetRequest.getIdUser();
+                    String email = meetRequest.getEmail();
                     String idMeet = meetRequest.getMeet().getIdMeet();
 
 
-                    log.info("Parametros remove meet: {} - {}", idUser, idMeet);
+                    log.info("Parametros remove meet: {} - {}", email, idMeet);
 
 
-                    if (Objects.nonNull(idUser) && Objects.nonNull(idMeet)) {
-                        return settleService.removeMeetSettle(idUser, idMeet, mongoRepository)
+                    if (Objects.nonNull(email) && Objects.nonNull(idMeet)) {
+                        return settleService.removeMeetSettle(email, idMeet, mongoRepository)
                                 .flatMap(user -> ServerResponse.ok().body(Mono.just("Encuentro eliminado."), String.class))
                                 .switchIfEmpty(ServerResponse.ok()
                                         .body(Mono.just(ErrorDto.builder()
@@ -156,14 +163,14 @@ public class HandlerSettle {
         return request.bodyToMono(BillRequest.class)
                 .flatMap(billRequest ->
                 {
-                    String idUser = billRequest.getIdUser();
+                    String email = billRequest.getEmail();
                     String idMeet = billRequest.getIdMeet();
                     BillDto bill = billRequest.getBill();
 
-                    log.info("Parametros add bill: {} - {} - {}", idUser, idMeet, bill.getReference());
+                    log.info("Parametros add bill: {} - {} - {}", email, idMeet, bill.getReference());
 
-                    if (Objects.nonNull(idUser) && Objects.nonNull(idMeet)) {
-                        return settleService.addBillListMeetSettle(idUser, idMeet, BillMapper.INSTANCE.convertDtoToDomainMongo(bill), mongoRepository)
+                    if (Objects.nonNull(email) && Objects.nonNull(idMeet)) {
+                        return settleService.addBillListMeetSettle(email, idMeet, BillMapper.INSTANCE.convertDtoToDomainMongo(bill), mongoRepository)
                                 .flatMap(user -> createSuccessResponse("Pago agregado."))
                                 .switchIfEmpty(createErrorResponse("Pago no agregado."))
                                 .onErrorResume((error) -> {
@@ -184,13 +191,13 @@ public class HandlerSettle {
         System.out.println("En Update Bill");
         return request.bodyToMono(BillRequest.class)
                 .flatMap(billRequest -> {
-                    String idUser = billRequest.getIdUser();
+                    String email = billRequest.getEmail();
                     String idMeet = billRequest.getIdMeet();
                     BillDto bill = billRequest.getBill();
 
-                    log.info("Parametros add bill: {} - {} - {}", idUser, idMeet, bill.getReference());
+                    log.info("Parametros add bill: {} - {} - {}", email, idMeet, bill.getReference());
 
-                    return settleService.updateBillSettle(idUser, idMeet, BillMapper.INSTANCE.convertDtoToDomainMongo(bill), mongoRepository)
+                    return settleService.updateBillSettle(email, idMeet, BillMapper.INSTANCE.convertDtoToDomainMongo(bill), mongoRepository)
                             .flatMap(user -> createSuccessResponse("Pago modificado."))
                             .switchIfEmpty(createErrorResponse("No hubo cambios."))
                             .onErrorResume((error) -> {
@@ -208,14 +215,14 @@ public class HandlerSettle {
         System.out.println("En Remove Bill");
         return request.bodyToMono(BillRequest.class)
                 .flatMap(billRequest -> {
-                            String idUser = billRequest.getIdUser();
+                            String email = billRequest.getEmail();
                             String idMeet = billRequest.getIdMeet();
                             String idBill = billRequest.getBill().getIdBill();
 
-                            log.info("Parametros add bill: {} - {} - {}", idUser, idMeet, idBill);
+                            log.info("Parametros add bill: {} - {} - {}", email, idMeet, idBill);
 
-                            if (Objects.nonNull(idUser) && Objects.nonNull(idMeet) && Objects.nonNull(idBill)) {
-                                return settleService.removeBillSettle(idUser, idMeet, idBill, mongoRepository)
+                            if (Objects.nonNull(email) && Objects.nonNull(idMeet) && Objects.nonNull(idBill)) {
+                                return settleService.removeBillSettle(email, idMeet, idBill, mongoRepository)
                                         .flatMap(user -> createSuccessResponse("Pago eliminado."))
                                         .switchIfEmpty(createErrorResponse("No hubo cambios."))
                                         .onErrorResume((error) -> {

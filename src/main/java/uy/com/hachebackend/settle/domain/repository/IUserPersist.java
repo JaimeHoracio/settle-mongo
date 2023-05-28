@@ -11,21 +11,23 @@ public interface IUserPersist {
 
     Mono<UserDomain> findUser(final String idUses);
 
-    Mono<UserDomain> createUser(final String idUser, final String name, final String password, final List<String> roles);
+    Mono<UserDomain> createUser(final String email, final String name, final String password, final List<String> roles);
 
-    Mono<UserDomain> addMeetSettle(final String idUser, final MeetDomain meet);
+    Mono<UserDomain> updateUser(final UserDomain user);
 
-    Mono<UserDomain> updateMeetSettle(final String idUser, final MeetDomain meet);
+    Mono<UserDomain> addMeetSettle(final String email, final MeetDomain meet);
 
-    Mono<UserDomain> closeMeetSettle(final String idUser, final String idMeet);
+    Mono<UserDomain> updateMeetSettle(final String email, final MeetDomain meet);
 
-    Mono<UserDomain> removeMeetSettle(final String idUser, final String idMeet);
+    Mono<UserDomain> closeMeetSettle(final String email, final String idMeet);
 
-    Mono<UserDomain> addBillListMeetSettle(final String idUser, final String meet, final BillDomain bill);
+    Mono<UserDomain> removeMeetSettle(final String email, final String idMeet);
 
-    Mono<UserDomain> updateBillListMeetSettle(final String idUser, final String meet, final BillDomain bill);
+    Mono<UserDomain> addBillListMeetSettle(final String email, final String meet, final BillDomain bill);
 
-    Mono<UserDomain> removeBillListMeetSettle(final String idUser, final String meet, final String idBill);
+    Mono<UserDomain> updateBillListMeetSettle(final String email, final String meet, final BillDomain bill);
+
+    Mono<UserDomain> removeBillListMeetSettle(final String email, final String meet, final String idBill);
 
 
 }

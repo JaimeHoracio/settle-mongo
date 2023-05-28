@@ -7,9 +7,9 @@ import java.util.List;
 @Data
 @ToString
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserDomain {
-
-    private String idUser;
 
     private String email;
 

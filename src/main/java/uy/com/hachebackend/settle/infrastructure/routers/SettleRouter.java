@@ -10,6 +10,10 @@ import uy.com.hachebackend.settle.infrastructure.handlers.HandlerSettle;
 @Configuration
 public class SettleRouter {
 
+    @Bean
+    public RouterFunction<ServerResponse> initSettle(HandlerSettle handlerSettle) {
+        return RouterFunctions.route().GET("/api/hache/settle/init", handlerSettle::initSettle).build();
+    }
     // Meet
     @Bean
     public RouterFunction<ServerResponse> addMeetSettle(HandlerSettle handlerSettle) {

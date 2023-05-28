@@ -12,32 +12,32 @@ import uy.com.hachebackend.settle.domain.repository.IUserPersist;
 @Slf4j
 public class SettleService {
 
-    public Mono<UserDomain> addMeetSettle(final String idUser, final MeetDomain meet, final IUserPersist userPesist) {
-        return userPesist.addMeetSettle(idUser, meet);
+    public Mono<UserDomain> addMeetSettle(final String email, final MeetDomain meet, final IUserPersist userPesist) {
+        return userPesist.addMeetSettle(email, meet);
     }
 
-    public Mono<UserDomain> updateMeetSettle(final String idUser, final MeetDomain meet, final IUserPersist userPesist) {
-        return userPesist.updateMeetSettle(idUser, meet);
+    public Mono<UserDomain> updateMeetSettle(final String email, final MeetDomain meet, final IUserPersist userPesist) {
+        return userPesist.updateMeetSettle(email, meet);
     }
 
-    public Mono<UserDomain> closeMeetSettle(final String idUser, final String idMeet, final IUserPersist userPesist) {
-        return userPesist.closeMeetSettle(idUser, idMeet);
+    public Mono<UserDomain> closeMeetSettle(final String email, final String idMeet, final IUserPersist userPesist) {
+        return userPesist.closeMeetSettle(email, idMeet);
     }
 
-    public Mono<UserDomain> removeMeetSettle(final String idUser, final String idMeet, final IUserPersist userPesist) {
-        return userPesist.removeMeetSettle(idUser, idMeet);
+    public Mono<UserDomain> removeMeetSettle(final String email, final String idMeet, final IUserPersist userPesist) {
+        return userPesist.removeMeetSettle(email, idMeet);
     }
 
-    public Mono<UserDomain> addBillListMeetSettle(final String idUser, final String idMeet, final BillDomain bill, final IUserPersist userPesist) {
-        return userPesist.addBillListMeetSettle(idUser, idMeet, bill);
+    public Mono<UserDomain> addBillListMeetSettle(final String email, final String idMeet, final BillDomain bill, final IUserPersist userPesist) {
+        return userPesist.addBillListMeetSettle(email, idMeet, bill);
     }
 
-    public Mono<UserDomain> updateBillSettle(final String idUser, final String idMeet, final BillDomain bill, final IUserPersist userPesist) {
-        return userPesist.updateBillListMeetSettle(idUser, idMeet, bill);
+    public Mono<UserDomain> updateBillSettle(final String email, final String idMeet, final BillDomain bill, final IUserPersist userPesist) {
+        return userPesist.updateBillListMeetSettle(email, idMeet, bill);
     }
 
-    public Mono<UserDomain> removeBillSettle(final String idUser, final String idMeet, final String idBill, final IUserPersist userPesist) {
-        return userPesist.removeBillListMeetSettle(idUser, idMeet, idBill);
+    public Mono<UserDomain> removeBillSettle(final String email, final String idMeet, final String idBill, final IUserPersist userPesist) {
+        return userPesist.removeBillListMeetSettle(email, idMeet, idBill);
     }
 
 }
