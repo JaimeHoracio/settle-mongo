@@ -11,8 +11,8 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserSimpleDto implements Serializable {
-    @JsonProperty("email")
-    private String email;
+    @JsonProperty("idUser")
+    private String idUser;
     @JsonProperty("name")
     private String name;
 }

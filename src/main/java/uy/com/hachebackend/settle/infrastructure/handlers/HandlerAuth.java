@@ -67,9 +67,6 @@ public class HandlerAuth {
                                                 u.getPassword(),
                                                 u.getRoles());
                                         u.setToken(token);
-
-                                        log.info("UserLogin : {}", u);
-
                                         return createSuccessResponse(u);
                                     } else {
                                         return createErrorResponse("Invalid credencial.");

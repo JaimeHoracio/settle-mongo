@@ -14,6 +14,12 @@ public class SettleRouter {
     public RouterFunction<ServerResponse> initSettle(HandlerSettle handlerSettle) {
         return RouterFunctions.route().GET("/api/hache/settle/init", handlerSettle::initSettle).build();
     }
+    @Bean
+    public RouterFunction<ServerResponse> selectMeetSettle(HandlerSettle handlerSettle) {
+        return RouterFunctions.route().GET("/api/hache/settle/meet/select", handlerSettle::selectSettle).build();
+    }
+
+
     // Meet
     @Bean
     public RouterFunction<ServerResponse> addMeetSettle(HandlerSettle handlerSettle) {

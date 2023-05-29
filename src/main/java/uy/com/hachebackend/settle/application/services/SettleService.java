@@ -12,6 +12,10 @@ import uy.com.hachebackend.settle.domain.repository.IUserPersist;
 @Slf4j
 public class SettleService {
 
+    public Mono<MeetDomain> selectMeetSettle(final String idMeet, final IUserPersist userPesist) {
+        return userPesist.selectMeetSettle(idMeet);
+    }
+
     public Mono<UserDomain> addMeetSettle(final String email, final MeetDomain meet, final IUserPersist userPesist) {
         return userPesist.addMeetSettle(email, meet);
     }

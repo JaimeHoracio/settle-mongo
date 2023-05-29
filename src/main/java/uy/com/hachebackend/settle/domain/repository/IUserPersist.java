@@ -13,7 +13,7 @@ public interface IUserPersist {
 
     Mono<UserDomain> createUser(final String email, final String name, final String password, final List<String> roles);
 
-    Mono<UserDomain> updateUser(final UserDomain user);
+    Mono<MeetDomain> selectMeetSettle(final String idMeet);
 
     Mono<UserDomain> addMeetSettle(final String email, final MeetDomain meet);
 

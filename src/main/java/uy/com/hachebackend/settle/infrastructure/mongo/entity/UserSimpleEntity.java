@@ -9,6 +9,6 @@ import lombok.*;
 @AllArgsConstructor
 public class UserSimpleEntity {
 
-    private String email;
+    private String idUser;
     private String name;
 }

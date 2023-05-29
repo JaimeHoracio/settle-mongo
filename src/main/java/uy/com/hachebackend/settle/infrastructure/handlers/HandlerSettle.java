@@ -35,8 +35,30 @@ public class HandlerSettle {
         return createSuccessResponse("Settle inicializado.");
     }
 
+    public Mono<ServerResponse> selectSettle(final ServerRequest request) {
+        System.out.println("Select Meet");
+        return request.bodyToMono(MeetRequest.class)
+                .flatMap(meetRequest -> {
+                    String idMeet = meetRequest.getMeet().getIdMeet();
+
+                    log.info("Parametros select meet: {} ", idMeet);
+
+                    return settleService.selectMeetSettle(idMeet, mongoRepository)
+                            .flatMap(meet -> createSuccessResponse(meet))
+                            .switchIfEmpty(createErrorResponse("No hubo cambios."))
+                            .onErrorResume((error) -> {
+                                log.error(">>>>> Error: {}", error.getMessage());
+                                return createErrorResponse(error.getMessage());
+                            });
+                })
+                .onErrorResume((error) -> {
+                    log.error(">>>>> Error: {}", error.getMessage());
+                    return createErrorResponse(error.getMessage());
+                });
+    }
+
     public Mono<ServerResponse> addMeetSettle(final ServerRequest request) {
-        System.out.println("En Add Meet");
+        System.out.println("Add Meet");
         return request.bodyToMono(MeetRequest.class)
                 .flatMap(meetRequest -> {
                     String email = meetRequest.getEmail();
@@ -59,7 +81,7 @@ public class HandlerSettle {
     }
 
     public Mono<ServerResponse> updateMeetSettle(final ServerRequest request) {
-        System.out.println("En Update Meet");
+        System.out.println("Update Meet");
         return request.bodyToMono(MeetRequest.class)
                 .flatMap(meetRequest -> {
                     String email = meetRequest.getEmail();
@@ -83,7 +105,7 @@ public class HandlerSettle {
     }
 
     public Mono<ServerResponse> closeMeetSettle(final ServerRequest request) {
-        System.out.println("En close Meet");
+        System.out.println("close Meet");
         return request.bodyToMono(MeetRequest.class)
                 .flatMap(meetRequest -> {
                     String email = meetRequest.getEmail();
@@ -120,7 +142,7 @@ public class HandlerSettle {
     }
 
     public Mono<ServerResponse> removeMeetSettle(final ServerRequest request) {
-        System.out.println("En Remove Meet");
+        System.out.println("Remove Meet");
         return request.bodyToMono(MeetRequest.class)
                 .flatMap(meetRequest -> {
                     String email = meetRequest.getEmail();
@@ -159,7 +181,7 @@ public class HandlerSettle {
     }
 
     public Mono<ServerResponse> addBillSettle(final ServerRequest request) {
-        System.out.println("En Add Bill");
+        System.out.println("Add Bill");
         return request.bodyToMono(BillRequest.class)
                 .flatMap(billRequest ->
                 {
@@ -188,7 +210,7 @@ public class HandlerSettle {
     }
 
     public Mono<ServerResponse> updateBillSettle(final ServerRequest request) {
-        System.out.println("En Update Bill");
+        System.out.println("Update Bill");
         return request.bodyToMono(BillRequest.class)
                 .flatMap(billRequest -> {
                     String email = billRequest.getEmail();
@@ -212,7 +234,7 @@ public class HandlerSettle {
     }
 
     public Mono<ServerResponse> removeBillSettle(final ServerRequest request) {
-        System.out.println("En Remove Bill");
+        System.out.println("Remove Bill");
         return request.bodyToMono(BillRequest.class)
                 .flatMap(billRequest -> {
                             String email = billRequest.getEmail();

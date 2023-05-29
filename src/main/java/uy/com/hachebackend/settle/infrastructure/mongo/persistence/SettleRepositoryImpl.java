@@ -43,8 +43,14 @@ public class SettleRepositoryImpl implements IUserPersist {
         return userRepository.save(user).map(UserMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
-    public Mono<UserDomain> updateUser(final UserDomain user) {
-        return Mono.just(user);
+    public Mono<MeetDomain> selectMeetSettle(final String idMeet) {
+        Query query = new Query(Criteria.where("settle.listMeet.idMeet").is(idMeet));
+
+        return mongoTemplate.findOne(query, MeetEntity.class).map(MeetMapper.INSTANCE::convertEntityToDomainMongo)
+                .onErrorResume((error) -> {
+                    log.error(">>>>> Error finding Meet Select: {}", error.getMessage());
+                    return Mono.empty();
+                });
     }
 
     @Override

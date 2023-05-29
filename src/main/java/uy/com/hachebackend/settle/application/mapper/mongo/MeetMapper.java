@@ -15,4 +15,6 @@ public interface MeetMapper {
 
     MeetEntity convertDomainToEntityMongo(final MeetDomain meetDomain);
 
+    MeetDomain convertEntityToDomainMongo(final MeetEntity meetEntity);
+
 }
