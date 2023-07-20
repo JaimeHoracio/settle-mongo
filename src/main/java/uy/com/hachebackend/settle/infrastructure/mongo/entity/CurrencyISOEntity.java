@@ -1,10 +1,11 @@
 package uy.com.hachebackend.settle.infrastructure.mongo.entity;
 
 import lombok.*;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document("CurrencyISO")
+@Document("currencyISO")
 @Data
 @ToString
 @Builder
