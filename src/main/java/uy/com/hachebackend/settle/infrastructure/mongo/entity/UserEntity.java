@@ -8,7 +8,6 @@ import java.util.List;
 
 @Document(collection = "users")
 @Data
-@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

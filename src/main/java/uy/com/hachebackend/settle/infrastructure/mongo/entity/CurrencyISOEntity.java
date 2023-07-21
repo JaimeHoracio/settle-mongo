@@ -5,15 +5,16 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document("currencyISO")
+@Document(collection = "currencyISO")
 @Data
-@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CurrencyISOEntity {
 
     @Id
+    private String id;
+
     private String code;
     private String name;
     private Integer num;
