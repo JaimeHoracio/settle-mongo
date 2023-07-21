@@ -10,6 +10,19 @@ import uy.com.hachebackend.settle.infrastructure.handlers.HandlerSettle;
 @Configuration
 public class SettleRouter {
 
+
+    /**
+     *
+     *
+     *
+     * FILTRO PARA CONTROLAR QUE EL USUARIO QUE HACE LA MODIFICACION SEA EL MISMO DEL TOKEN!!!!
+     *
+     *
+     *
+     * */
+
+
+
     @Bean
     public RouterFunction<ServerResponse> initSettle(HandlerSettle handlerSettle) {
         return RouterFunctions.route().GET("/api/hache/settle/init", handlerSettle::initSettle).build();

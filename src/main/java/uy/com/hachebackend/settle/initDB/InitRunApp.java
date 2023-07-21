@@ -1,14 +1,13 @@
 package uy.com.hachebackend.settle.initDB;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import uy.com.hachebackend.settle.infrastructure.dto.CurrencyDto;
 import uy.com.hachebackend.settle.infrastructure.handlers.HandlerCurrency;
 import uy.com.hachebackend.settle.infrastructure.handlers.HandlerUser;
 
 @Component
-public class InitRunApp  {
+public class InitRunApp {
 
     @Autowired
     private HandlerUser handlerUser;
@@ -29,7 +28,8 @@ public class InitRunApp  {
 
         CurrencyDto[] list = new CurrencyDto[]{currencyUy, currencyAr, currencyBr, currencyCh, currencyUsa, currencyEuro};
         for (CurrencyDto c : list) {
-            handlerCurrency.saveCurrencyIso(c.getCode(), c.getName(), c.getNum(), c.getCountry());
+            // NOTA: Si no se pone subscribe(), no se hace efectivo el flujo, porque para activarlo debe haber un comando terminal.
+            handlerCurrency.saveCurrencyIso(c.getCode(), c.getName(), c.getNum(), c.getCountry()).subscribe();
         }
         System.out.println(">>>> Monedas cargadas.");
     }
