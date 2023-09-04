@@ -1,16 +1,20 @@
 package uy.com.hachebackend.settle.infrastructure.mongo.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
+import java.util.Date;
 
 @Data
-@ToString
 @Builder
-@NoArgsConstructor
+@ToString
 @AllArgsConstructor
-public class SettleEntity {
+@NoArgsConstructor
+public class SettleEntity implements Serializable {
 
-    private List<MeetEntity> listMeet = new ArrayList<>();
+    private Float total_paid;
+    private Float total_debt;
+    private Integer count_meets;
+
 }

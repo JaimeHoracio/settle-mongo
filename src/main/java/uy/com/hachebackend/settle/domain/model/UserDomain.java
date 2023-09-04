@@ -2,6 +2,7 @@ package uy.com.hachebackend.settle.domain.model;
 
 import lombok.*;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -11,13 +12,15 @@ import java.util.List;
 @AllArgsConstructor
 public class UserDomain {
 
-    private String email;
+    private String idUser;
 
     private Boolean guest;
 
     private String name;
 
     private String password;
+
+    private Date date_create;
 
     private String token;
 

@@ -2,9 +2,7 @@ package uy.com.hachebackend.settle.domain.model;
 
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Data
 @ToString
@@ -14,9 +12,11 @@ import java.util.List;
 public class MeetDomain {
 
     private String idMeet;
+    private String idUser;
+    private UserNameDomain owner;
     private Boolean active;
     private String name;
     private Date created;
     private Date updated;
-    private List<BillDomain> listBill = new ArrayList<>();
+
 }

@@ -29,7 +29,7 @@ public class HandlerUser {
     }
 
     public void initUserAdmin() {
-        userService.createUser(EMAIL, NAME, PASSWORD, mongoRepository).subscribe(u ->
+        userService.createUser(EMAIL, NAME, PASSWORD, false, mongoRepository).subscribe(u ->
                 System.out.println(">>>> Usuario administrador creado...."));
     }
 }

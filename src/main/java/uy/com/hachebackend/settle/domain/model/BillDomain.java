@@ -14,6 +14,9 @@ import java.util.List;
 public class BillDomain {
 
     private String idBill;
+    private String idMeet;
+
+    private UserNameDomain owner;
     private String reference;
     private Date created;
     private ReceiptContainerDomain receipt;

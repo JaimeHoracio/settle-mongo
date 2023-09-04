@@ -15,5 +15,5 @@ public class PaymentDto implements Serializable {
     @JsonProperty("amount")
     private Double amount;
     @JsonProperty("user")
-    private UserSimpleDto user;
+    private UserNameDto user;
 }

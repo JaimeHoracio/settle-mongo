@@ -1,29 +1,44 @@
 package uy.com.hachebackend.settle.infrastructure.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 @Data
 @Builder
 @ToString
 @AllArgsConstructor
-@NoArgsConstructor
 public class MeetDto implements Serializable {
 
+    @NotNull(message = "Meet can not be empty")
     @JsonProperty("idMeet")
     private String idMeet;
-    @JsonProperty("active")
-    private Boolean active;
+
+    @NotNull(message = "User can not be empty")
+    @JsonProperty("idUser")
+    private String idUser;
+
+    @NotNull(message = "Name meet can not be empty")
     @JsonProperty("name")
     private String name;
+
+    @NotNull(message = "User who create meet can not be empty")
+    @JsonProperty("owner")
+    private UserNameDto owner;
+
+    @JsonProperty("active")
+    private Boolean active;
+
     @JsonProperty("created")
     private Date created;
+
     @JsonProperty("updated")
     private Date updated;
-    @JsonProperty("listBill")
-    private List<BillDto> listBill;
+
 }

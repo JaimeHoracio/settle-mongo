@@ -20,6 +20,7 @@
         <spring.security.version>3.0.6</spring.security.version>
         <java.jwt.version>0.11.5</java.jwt.version>
         <org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
+        <jakarta.validation.version>3.0.2</jakarta.validation.version>
     </properties>
     <dependencies>
 
@@ -40,6 +41,17 @@
             <artifactId>mapstruct</artifactId>
             <version>${org.mapstruct.version}</version>
         </dependency>
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>${jakarta.validation.version}</version>
+        </dependency>
+        <!--
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        -->
 
         <!-- Actuator -->
         <dependency>

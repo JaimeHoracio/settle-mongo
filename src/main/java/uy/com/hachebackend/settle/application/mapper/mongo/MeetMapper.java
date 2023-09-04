@@ -1,6 +1,7 @@
 package uy.com.hachebackend.settle.application.mapper.mongo;
 
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 import uy.com.hachebackend.settle.domain.model.MeetDomain;
 import uy.com.hachebackend.settle.infrastructure.mongo.entity.MeetEntity;
@@ -13,8 +14,10 @@ public interface MeetMapper {
 
     MeetDomain convertDtoToDomainMongo(final MeetDto meetDto);
 
+    @Mapping(source = "owner.name", target = "owner")
     MeetEntity convertDomainToEntityMongo(final MeetDomain meetDomain);
 
+    @Mapping(source = "owner", target = "owner.name")
     MeetDomain convertEntityToDomainMongo(final MeetEntity meetEntity);
 
 }

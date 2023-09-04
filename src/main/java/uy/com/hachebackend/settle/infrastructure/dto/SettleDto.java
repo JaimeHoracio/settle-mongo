@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -13,6 +14,13 @@ import java.util.List;
 @NoArgsConstructor
 public class SettleDto implements Serializable {
 
-    @JsonProperty("listMeet")
-    private List<MeetDto> listMeet;
+    @JsonProperty("totalPaid")
+    private Float total_paid;
+
+    @JsonProperty("totalDebt")
+    private Float total_debt;
+
+    @JsonProperty("countMeets")
+    private Integer count_meets;
+
 }

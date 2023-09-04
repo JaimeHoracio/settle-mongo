@@ -1,8 +1,10 @@
 package uy.com.hachebackend.settle.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -12,5 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class SettleDomain {
 
-    private List<MeetDomain> listMeet = new ArrayList<>();
+    private Float total_paid;
+    private Float total_debt;
+    private Integer count_meets;
 }

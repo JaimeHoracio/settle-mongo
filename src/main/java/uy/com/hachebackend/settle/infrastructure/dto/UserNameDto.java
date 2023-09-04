@@ -10,11 +10,9 @@ import java.io.Serializable;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class MeetRequest implements Serializable {
-
-    @JsonProperty("email")
-    private String email;
-    @JsonProperty("meet")
-    private MeetDto meet;
-
+public class UserNameDto implements Serializable {
+    @JsonProperty("idUser")
+    private String idUser;
+    @JsonProperty("name")
+    private String name;
 }

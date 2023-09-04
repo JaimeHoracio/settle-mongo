@@ -9,5 +9,5 @@ import lombok.*;
 @AllArgsConstructor
 public class PaymentDomain {
     private Double amount;
-    private UserSimpleDomain user;
+    private UserNameDomain user;
 }

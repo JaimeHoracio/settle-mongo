@@ -6,9 +6,9 @@ import reactor.core.publisher.Mono;
 import uy.com.hachebackend.settle.infrastructure.mongo.entity.UserEntity;
 
 @Repository
-public interface ISettleUserRepository extends ReactiveMongoRepository<UserEntity, String> {
+public interface IUserRepository extends ReactiveMongoRepository<UserEntity, String> {
 
-    Mono<UserEntity> findById(final String email);
+    Mono<UserEntity> findByIdUser(final String idUser);
 
     // No tiene sentido filtrar por meet porque te devuelve el usuario entero y luego hay que buscarlo nuevamente.
     //@Query(value = "{'_id': ?0, 'settle.listMeet.idMeet':?1 }")

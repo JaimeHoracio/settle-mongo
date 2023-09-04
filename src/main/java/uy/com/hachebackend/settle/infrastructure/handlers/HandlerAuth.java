@@ -2,6 +2,7 @@ package uy.com.hachebackend.settle.infrastructure.handlers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -28,26 +29,37 @@ public class HandlerAuth {
     public Mono<ServerResponse> signUpSettle(final ServerRequest request) {
         System.out.println("En signUP");
         return request.bodyToMono(UserDomain.class)
-                .flatMap(
-                        user -> userService.findUser(user.getEmail(), mongoRepository)
-                                .flatMap(userServer -> createErrorResponse("Usuario ya existe."))
-                                .switchIfEmpty(userService.createUser(user.getEmail(),
-                                                user.getName(),
-                                                user.getPassword(),
-                                                mongoRepository)
-                                        .flatMap(u -> {
-                                            String token = JWTUtil.generateToken(u.getEmail(),
-                                                    u.getName(),
-                                                    u.getPassword(),
-                                                    u.getRoles());
-                                            u.setToken(token);
-                                            return createSuccessResponse(u);
-                                        })
-                                )
-                                .onErrorResume((error) -> {
-                                    log.error(">>>>> Error: {}", error.getMessage());
-                                    return createErrorResponse(error.getMessage());
-                                })
+                .flatMap(user -> {
+                            String name = user.getName();
+
+                            if (Strings.isEmpty(name)) {
+                                return createErrorResponse("El nombre es obligatorio.");
+                            } else {
+                                return userService.findUser(user.getIdUser(), mongoRepository)
+                                        .flatMap(userServer -> createErrorResponse("Usuario ya existe."))
+                                        .switchIfEmpty(Mono.defer(() -> {
+                                                    Mono<UserDto> userCreated = userService.createUser(user.getIdUser(),
+                                                            user.getName(),
+                                                            user.getPassword(),
+                                                            user.getGuest(),
+                                                            mongoRepository);
+
+                                                    return userCreated.flatMap(u -> {
+                                                        String token = JWTUtil.generateToken(u.getIdUser(),
+                                                                u.getName(),
+                                                                u.getPassword(),
+                                                                u.getRoles());
+                                                        u.setToken(token);
+                                                        return createSuccessResponse(u);
+                                                    });
+                                                })
+                                        )
+                                        .onErrorResume((error) -> {
+                                            log.error(">>>>> Error: {}", error.getMessage());
+                                            return createErrorResponse(error.getMessage());
+                                        });
+                            }
+                        }
                 )
                 .onErrorResume((error) -> {
                     log.error(">>>>> Error: {}", error.getMessage());
@@ -59,10 +71,10 @@ public class HandlerAuth {
         System.out.println("En signIN");
         return request.bodyToMono(UserDto.class)
                 .flatMap(
-                        user -> userService.findUser(user.getEmail(), mongoRepository)
+                        user -> userService.findUser(user.getIdUser(), mongoRepository)
                                 .flatMap(u -> {
                                     if (matchesPassword(user.getPassword(), u.getPassword())) {
-                                        String token = JWTUtil.generateToken(u.getEmail(),
+                                        String token = JWTUtil.generateToken(u.getIdUser(),
                                                 u.getName(),
                                                 u.getPassword(),
                                                 u.getRoles());
@@ -72,7 +84,7 @@ public class HandlerAuth {
                                         return createErrorResponse("Invalid credencial.");
                                     }
                                 })
-                                .switchIfEmpty(createErrorResponse("Usuario no existe."))
+                                .switchIfEmpty(Mono.defer(() -> createErrorResponse("Usuario no existe.")))
                                 .onErrorResume((error) -> {
                                     log.error(">>>>> Error: {}", error.getMessage());
                                     return createErrorResponse(error.getMessage());

@@ -1,5 +1,6 @@
 package uy.com.hachebackend.settle.domain.repository;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import uy.com.hachebackend.settle.domain.model.BillDomain;
 import uy.com.hachebackend.settle.domain.model.MeetDomain;
@@ -9,25 +10,27 @@ import java.util.List;
 
 public interface IUserPersist {
 
-    Mono<UserDomain> findUser(final String idUses);
+    Mono<UserDomain> findUser(final String idUser);
 
-    Mono<UserDomain> createUser(final String email, final String name, final String password, final List<String> roles);
+    Mono<UserDomain> createUser(final String email, final String name, final String password, Boolean guest, final List<String> roles);
 
-    Mono<MeetDomain> selectMeetSettle(final String idMeet);
+    Flux<MeetDomain> selectAllMeetSettle(final String idUser);
 
-    Mono<UserDomain> addMeetSettle(final String email, final MeetDomain meet);
+    Mono<MeetDomain> selectMeetSettle(final String idUser, final String idMeet);
 
-    Mono<UserDomain> updateMeetSettle(final String email, final MeetDomain meet);
+    Mono<String> addMeetSettle(final MeetDomain meet);
 
-    Mono<UserDomain> closeMeetSettle(final String email, final String idMeet);
+    Mono<String> updateMeetSettle(final MeetDomain meet);
 
-    Mono<UserDomain> removeMeetSettle(final String email, final String idMeet);
+    Mono<String> closeMeetSettle(final String email, final String idMeet);
 
-    Mono<UserDomain> addBillListMeetSettle(final String email, final String meet, final BillDomain bill);
+    Mono<Void> removeMeetSettle(final String email, final String idMeet);
 
-    Mono<UserDomain> updateBillListMeetSettle(final String email, final String meet, final BillDomain bill);
+    Mono<String> addBillToMeetSettle(final BillDomain bill);
 
-    Mono<UserDomain> removeBillListMeetSettle(final String email, final String meet, final String idBill);
+    Mono<String> updateBillToMeetSettle(final BillDomain bill);
 
+    Mono<String> removeBillToMeetSettle(final String idBill);
 
+    Flux<BillDomain> selectAllBillSettle(final String idMeet);
 }

@@ -7,8 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserSimpleDomain {
+public class UserNameDomain {
 
-    private String idUser;
     private String name;
 }
