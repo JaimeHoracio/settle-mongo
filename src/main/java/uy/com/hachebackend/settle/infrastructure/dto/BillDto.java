@@ -37,6 +37,9 @@ public class BillDto implements Serializable {
     @JsonProperty("created")
     private Date created;
 
+    @JsonProperty("updated")
+    private Date updated;
+
     @JsonProperty("receipt")
     private ReceiptContainerDto receipt;
 

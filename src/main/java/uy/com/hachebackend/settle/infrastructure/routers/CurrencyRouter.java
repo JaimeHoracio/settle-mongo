@@ -12,6 +12,6 @@ public class CurrencyRouter {
 
     @Bean
     public RouterFunction<ServerResponse> getCurrencyAll(HandlerCurrency handlerCurrency) {
-        return RouterFunctions.route().GET("/api/hache/currency/all", handlerCurrency::getAllCurrency).build();
+        return RouterFunctions.route().GET("/api/settle/currency/all", handlerCurrency::getAllCurrency).build();
     }
 }

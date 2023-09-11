@@ -2,9 +2,6 @@ package uy.com.hachebackend.settle.infrastructure.mongo.persistence;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -31,7 +28,6 @@ public class SettleRepositoryImpl implements IUserPersist {
     private final IUserRepository userRepository;
     private final IMeetRepository meetRepository;
     private final IBillRepository billRepository;
-    private final ReactiveMongoTemplate mongoTemplate;
 
     @Override
     public Mono<UserDomain> findUser(String idUser) {
@@ -54,24 +50,16 @@ public class SettleRepositoryImpl implements IUserPersist {
         return userRepository.save(user).map(UserMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
-    public Flux<MeetDomain> selectAllMeetSettle(final String idUser) {
-        Query query = new Query(Criteria.where("idUser").is(idUser));
-
-        return mongoTemplate.find(query, MeetEntity.class)
-                .map(MeetMapper.INSTANCE::convertEntityToDomainMongo)
-                .onErrorResume((error) -> {
-                    log.error(">>>>> Error finding Meet Select: {}", error.getMessage());
-                    return Mono.empty();
-                });
+    public Flux<MeetDomain> selectAllMeetSettle(final String idUser, Boolean active) {
+        return meetRepository.findByIdUserAndActive(idUser, active)
+                .map(MeetMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
-    public Mono<MeetDomain> selectMeetSettle(final String idUser, final String idMeet) {
-        return selectMeetUser(idUser, idMeet)
-                .map(MeetMapper.INSTANCE::convertEntityToDomainMongo)
-                .onErrorResume((error) -> {
-                    log.error(">>>>> Error finding Meet Select: {}", error.getMessage());
-                    return Mono.empty();
-                });
+    public Mono<MeetDomain> selectMeetSettle(final String idMeet) {
+        return meetRepository.findByIdMeet(idMeet)
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new Exception("No se encontró encuentro"))))
+                .next()
+                .map(MeetMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
     @Override
@@ -128,7 +116,18 @@ public class SettleRepositoryImpl implements IUserPersist {
                     log.debug("Meet no encontrado: {} - {}", idUser, idMeet);
                     return Mono.error(new Exception("Meet no encontrado."));
                 }))
-                .flatMap(meetRepository::delete);
+                .flatMap(meet -> {
+                    //Cuantos usuarios comparten el mismo encuentro
+                    return meetRepository.findByIdMeet(idMeet)
+                            .collectList()
+                            .flatMap(list -> {
+                                if (list.size() == 1) {
+                                    //Si el meet no esta compartido elimino tambien los pagos asociados al Meet
+                                    billRepository.deleteByIdMeet(idMeet);
+                                }
+                                return meetRepository.delete(meet);
+                            });
+                });
     }
 
     /*------------------- BILL --------------------*/
@@ -139,6 +138,7 @@ public class SettleRepositoryImpl implements IUserPersist {
                 .switchIfEmpty(Mono.defer(() -> {
                     BillEntity bill = BillMapper.INSTANCE.convertDomainToEntityMongo(billDomain);
                     bill.setCreated(new Date());
+                    bill.setUpdated(new Date());
                     bill.setOwner(Objects.nonNull(billDomain.getOwner()) ?
                             billDomain.getOwner().getName() :
                             billDomain.getListUsersPaid().get(0).getUserPaid().getUser().getName());
@@ -151,16 +151,18 @@ public class SettleRepositoryImpl implements IUserPersist {
     @Override
     public Mono<String> updateBillToMeetSettle(BillDomain billDomain) {
         return selectBillMeet(billDomain.getIdBill(), billDomain.getIdMeet())
+                .switchIfEmpty(Mono.defer(() -> Mono.error(new Exception("Bill no existe."))))
                 .flatMap(m -> {
                     BillEntity bill = BillMapper.INSTANCE.convertDomainToEntityMongo(billDomain);
                     bill.setReference(billDomain.getReference());
                     bill.setReceipt(ReceiptContainerMapper.INSTANCE.convertDomainToEntityMongo(billDomain.getReceipt()));
                     bill.setListUsersPaid(PaymentContainerMapper.INSTANCE.convertDomainToEntityMongo(billDomain.getListUsersPaid()));
-                    bill.setCreated(new Date());
+                    bill.setUpdated(new Date());
+                    bill.setOwner(billDomain.getOwner().getName());
+
                     return billRepository
                             .save(bill);
                 })
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new Exception("Bill ya existe."))))
                 .map(mi -> "ok");
     }
 
@@ -174,11 +176,7 @@ public class SettleRepositoryImpl implements IUserPersist {
 
     public Flux<BillDomain> selectAllBillSettle(final String idMeet) {
         return billRepository.findByIdMeet(idMeet)
-                .map(BillMapper.INSTANCE::convertEntityToDomainMongo)
-                .onErrorResume((error) -> {
-                    log.error(">>>>> Error finding Meet Select: {}", error.getMessage());
-                    return Mono.empty();
-                });
+                .map(BillMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
     private Mono<MeetEntity> selectMeetUser(final String idUser, final String idMeet) {

@@ -25,6 +25,7 @@ public class BillEntity {
     private String owner;
     private String reference;
     private Date created;
+    private Date updated;
     private ReceiptContainerEntity receipt;
     private List<PaymentContainerEntity> listUsersPaid = new ArrayList<>();
 

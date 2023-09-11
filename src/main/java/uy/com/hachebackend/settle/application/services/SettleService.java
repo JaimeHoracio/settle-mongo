@@ -14,12 +14,12 @@ import java.util.List;
 public class SettleService {
 
     //Meets
-    public Mono<List<MeetDomain>> selectAllMeetSettle(final String idUser, final IUserPersist userPesist) {
-        return userPesist.selectAllMeetSettle(idUser).collectList();
+    public Mono<List<MeetDomain>> selectAllMeetSettle(final String idUser, Boolean active, final IUserPersist userPesist) {
+        return userPesist.selectAllMeetSettle(idUser, active).collectList();
     }
 
-    public Mono<MeetDomain> selectMeetSettle(final String idUser, final String idMeet, final IUserPersist userPesist) {
-        return userPesist.selectMeetSettle(idUser, idMeet);
+    public Mono<MeetDomain> selectMeetSettle(final String idMeet, final IUserPersist userPesist) {
+        return userPesist.selectMeetSettle(idMeet);
     }
 
     public Mono<String> addMeetSettle(final MeetDomain meet, final IUserPersist userPesist) {

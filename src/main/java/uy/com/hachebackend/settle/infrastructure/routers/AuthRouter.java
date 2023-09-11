@@ -12,17 +12,17 @@ public class AuthRouter {
 
    @Bean
    public RouterFunction<ServerResponse> registerSettle(HandlerAuth handlerAuth) {
-      return RouterFunctions.route().POST("/api/hache/auth/signup", handlerAuth::signUpSettle).build();
+      return RouterFunctions.route().POST("/api/settle/auth/signup", handlerAuth::signUpSettle).build();
    }
 
    @Bean
    public RouterFunction<ServerResponse> loginSettle(HandlerAuth handlerAuth) {
-      return RouterFunctions.route().POST("/api/hache/auth/signin", handlerAuth::loginSettle).build();
+      return RouterFunctions.route().POST("/api/settle/auth/signin", handlerAuth::loginSettle).build();
    }
 
    @Bean
    public RouterFunction<ServerResponse> refreshLoginSettle(HandlerAuth handlerAuth) {
-      return RouterFunctions.route().POST("/api/hache/settle/refresh", handlerAuth::refreshSettle).build();
+      return RouterFunctions.route().POST("/api/settle/settle/refresh", handlerAuth::refreshSettle).build();
    }
 
 }

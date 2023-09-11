@@ -14,9 +14,9 @@ public interface IUserPersist {
 
     Mono<UserDomain> createUser(final String email, final String name, final String password, Boolean guest, final List<String> roles);
 
-    Flux<MeetDomain> selectAllMeetSettle(final String idUser);
+    Flux<MeetDomain> selectAllMeetSettle(final String idUser, Boolean active);
 
-    Mono<MeetDomain> selectMeetSettle(final String idUser, final String idMeet);
+    Mono<MeetDomain> selectMeetSettle(final String idMeet);
 
     Mono<String> addMeetSettle(final MeetDomain meet);
 

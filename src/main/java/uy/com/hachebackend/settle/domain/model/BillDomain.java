@@ -19,6 +19,7 @@ public class BillDomain {
     private UserNameDomain owner;
     private String reference;
     private Date created;
+    private Date updated;
     private ReceiptContainerDomain receipt;
     private List<PaymentContainerDomain> listUsersPaid = new ArrayList<>();
 
