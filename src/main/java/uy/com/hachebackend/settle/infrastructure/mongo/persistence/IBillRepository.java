@@ -15,5 +15,5 @@ public interface IBillRepository extends ReactiveMongoRepository<BillEntity, Str
 
     Mono<BillEntity> findByIdBillAndIdMeet(String idBill, String idMeet);
 
-    Mono<BillEntity> deleteByIdMeet(String idMeet);
+    Flux<BillEntity> findAllByIdMeet(String idMeet);
 }

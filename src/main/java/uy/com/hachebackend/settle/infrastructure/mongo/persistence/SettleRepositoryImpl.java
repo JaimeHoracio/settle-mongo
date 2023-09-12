@@ -2,6 +2,7 @@ package uy.com.hachebackend.settle.infrastructure.mongo.persistence;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,6 +29,7 @@ public class SettleRepositoryImpl implements IUserPersist {
     private final IUserRepository userRepository;
     private final IMeetRepository meetRepository;
     private final IBillRepository billRepository;
+    private final ReactiveMongoTemplate mongoTemplate;
 
     @Override
     public Mono<UserDomain> findUser(String idUser) {
@@ -123,7 +125,10 @@ public class SettleRepositoryImpl implements IUserPersist {
                             .flatMap(list -> {
                                 if (list.size() == 1) {
                                     //Si el meet no esta compartido elimino tambien los pagos asociados al Meet
-                                    billRepository.deleteByIdMeet(idMeet);
+                                    //Nota: No me funcionó el findAllAndRemove entonces lo hago a mano.
+                                    selectAllBillByIdMeet(idMeet)
+                                            .collectList()
+                                            .map(listBill -> listBill.parallelStream().map(billRepository::delete));
                                 }
                                 return meetRepository.delete(meet);
                             });
@@ -133,7 +138,7 @@ public class SettleRepositoryImpl implements IUserPersist {
     /*------------------- BILL --------------------*/
     @Override
     public Mono<String> addBillToMeetSettle(final BillDomain billDomain) {
-        return selectBillMeet(billDomain.getIdBill(), billDomain.getIdMeet())
+        return selectBillByIdBillAndIdMeet(billDomain.getIdBill(), billDomain.getIdMeet())
                 .flatMap(m -> Mono.error(new Exception("Bill ya existe.")))
                 .switchIfEmpty(Mono.defer(() -> {
                     BillEntity bill = BillMapper.INSTANCE.convertDomainToEntityMongo(billDomain);
@@ -150,7 +155,7 @@ public class SettleRepositoryImpl implements IUserPersist {
 
     @Override
     public Mono<String> updateBillToMeetSettle(BillDomain billDomain) {
-        return selectBillMeet(billDomain.getIdBill(), billDomain.getIdMeet())
+        return selectBillByIdBillAndIdMeet(billDomain.getIdBill(), billDomain.getIdMeet())
                 .switchIfEmpty(Mono.defer(() -> Mono.error(new Exception("Bill no existe."))))
                 .flatMap(m -> {
                     BillEntity bill = BillMapper.INSTANCE.convertDomainToEntityMongo(billDomain);
@@ -183,8 +188,12 @@ public class SettleRepositoryImpl implements IUserPersist {
         return meetRepository.findByIdUserAndIdMeet(idUser, idMeet);
     }
 
-    private Mono<BillEntity> selectBillMeet(final String idMeet, final String idBill) {
+    private Mono<BillEntity> selectBillByIdBillAndIdMeet(final String idMeet, final String idBill) {
         return billRepository.findByIdBillAndIdMeet(idMeet, idBill);
+    }
+
+    private Flux<BillEntity> selectAllBillByIdMeet(final String idMeet) {
+        return billRepository.findAllByIdMeet(idMeet);
     }
 
 }
