@@ -1,5 +1,6 @@
 package uy.com.hachebackend.settle.infrastructure.mongo.persistence;
 
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
@@ -13,7 +14,7 @@ public interface IBillRepository extends ReactiveMongoRepository<BillEntity, Str
 
     Flux<BillEntity> findByIdMeet(String idMeet);
 
+    @Query(value = "{'_id': ?0, 'idMeet':?1 }")
     Mono<BillEntity> findByIdBillAndIdMeet(String idBill, String idMeet);
 
-    Flux<BillEntity> findAllByIdMeet(String idMeet);
 }

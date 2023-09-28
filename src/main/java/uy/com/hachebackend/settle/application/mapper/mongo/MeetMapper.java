@@ -14,6 +14,7 @@ public interface MeetMapper {
 
     MeetDomain convertDtoToDomainMongo(final MeetDto meetDto);
 
+    @Mapping(target = "id", ignore = true)
     @Mapping(source = "owner.name", target = "owner")
     MeetEntity convertDomainToEntityMongo(final MeetDomain meetDomain);
 

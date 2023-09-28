@@ -25,14 +25,14 @@ public class SettleRouter {
     public RouterFunction<ServerResponse> selectAllMeetActiveSettle(HandlerSettle handlerSettle) {
         return RouterFunctions.route().GET("/api/settle/meet/all/active",
                 RequestPredicates.queryParam("idUser", t -> true),
-                request -> handlerSettle.selectAllMeetSettle(request, true)).build();
+                request -> handlerSettle.selectAllMeetByIdUserSettle(request, true)).build();
     }
 
     @Bean
     public RouterFunction<ServerResponse> selectAllMeetNotActiveSettle(HandlerSettle handlerSettle) {
         return RouterFunctions.route().GET("/api/settle/meet/all/notactive",
                 RequestPredicates.queryParam("idUser", t -> true),
-                request -> handlerSettle.selectAllMeetSettle(request, false)).build();
+                request -> handlerSettle.selectAllMeetByIdUserSettle(request, false)).build();
     }
 
 
@@ -81,6 +81,12 @@ public class SettleRouter {
     }
 
     @Bean
+    public RouterFunction<ServerResponse> updateAllBillsSettle(HandlerSettle handlerSettle) {
+        return RouterFunctions.route().PUT("/api/settle/bill/all",
+                handlerSettle::updateAllBillsSettle).build();
+    }
+
+    @Bean
     public RouterFunction<ServerResponse> removeBillSettle(HandlerSettle handlerSettle) {
         return RouterFunctions.route().DELETE("/api/settle/bill",
                 handlerSettle::removeBillSettle).build();
@@ -90,7 +96,7 @@ public class SettleRouter {
     public RouterFunction<ServerResponse> selectAllBillSettle(HandlerSettle handlerSettle) {
         return RouterFunctions.route().GET("/api/settle/bill/all",
                 RequestPredicates.queryParam("idMeet", t -> true),
-                handlerSettle::selectAllBillSettle).build();
+                handlerSettle::selectAllBillByIdMeetSettle).build();
     }
 
 }

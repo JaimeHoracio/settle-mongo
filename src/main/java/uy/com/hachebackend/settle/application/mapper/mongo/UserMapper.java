@@ -13,7 +13,9 @@ public interface UserMapper {
 
     //@Mapping(target = "email", ignore = true)
     UserDomain convertEntityToDomainMongo(final UserEntity entity);
-    
+
+    UserEntity convertDomainToEntityMongo(final UserDomain entity);
+
     UserDto convertDomainToDto(final UserDomain domain);
 
 }

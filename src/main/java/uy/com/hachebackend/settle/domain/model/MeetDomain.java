@@ -11,6 +11,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class MeetDomain {
 
+    private String id;
     private String idMeet;
     private String idUser;
     private UserNameDomain owner;

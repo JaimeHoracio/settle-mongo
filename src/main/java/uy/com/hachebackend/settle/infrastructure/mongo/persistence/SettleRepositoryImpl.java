@@ -3,28 +3,27 @@ package uy.com.hachebackend.settle.infrastructure.mongo.persistence;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import uy.com.hachebackend.settle.application.mapper.mongo.*;
+import uy.com.hachebackend.settle.application.mapper.mongo.BillMapper;
+import uy.com.hachebackend.settle.application.mapper.mongo.MeetMapper;
+import uy.com.hachebackend.settle.application.mapper.mongo.UserMapper;
 import uy.com.hachebackend.settle.domain.model.BillDomain;
 import uy.com.hachebackend.settle.domain.model.MeetDomain;
 import uy.com.hachebackend.settle.domain.model.UserDomain;
-import uy.com.hachebackend.settle.domain.repository.IUserPersist;
+import uy.com.hachebackend.settle.domain.repository.ISettlePersist;
 import uy.com.hachebackend.settle.infrastructure.mongo.entity.BillEntity;
 import uy.com.hachebackend.settle.infrastructure.mongo.entity.MeetEntity;
-import uy.com.hachebackend.settle.infrastructure.mongo.entity.SettleEntity;
-import uy.com.hachebackend.settle.infrastructure.mongo.entity.UserEntity;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class SettleRepositoryImpl implements IUserPersist {
+public class SettleRepositoryImpl implements ISettlePersist {
 
     private final IUserRepository userRepository;
     private final IMeetRepository meetRepository;
@@ -32,24 +31,16 @@ public class SettleRepositoryImpl implements IUserPersist {
     private final ReactiveMongoTemplate mongoTemplate;
 
     @Override
-    public Mono<UserDomain> findUser(String idUser) {
+    public Mono<UserDomain> selectUserSettle(String idUser) {
         return userRepository.findByIdUser(idUser)
                 .map(UserMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
     @Override
-    public Mono<UserDomain> createUser(String idUser, String name, String password, Boolean guest, List<String> roles) {
-
-        UserEntity user = UserEntity.builder()
-                .idUser(idUser)
-                .name(name)
-                .password(password)
-                .dateCreate(new Date())
-                .guest(Objects.nonNull(guest) ? guest : true)
-                .settle(SettleEntity.builder().count_meets(0).total_debt(0f).total_debt(0f).build())
-                .roles(roles)
-                .build();
-        return userRepository.save(user).map(UserMapper.INSTANCE::convertEntityToDomainMongo);
+    public Mono<UserDomain> saveUserSettle(UserDomain user) {
+        return userRepository
+                .save(UserMapper.INSTANCE.convertDomainToEntityMongo(user))
+                .map(UserMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
     public Flux<MeetDomain> selectAllMeetSettle(final String idUser, Boolean active) {
@@ -57,143 +48,73 @@ public class SettleRepositoryImpl implements IUserPersist {
                 .map(MeetMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
-    public Mono<MeetDomain> selectMeetSettle(final String idMeet) {
+    public Flux<MeetDomain> selectMeetSettle(final String idMeet) {
         return meetRepository.findByIdMeet(idMeet)
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new Exception("No se encontró encuentro"))))
-                .next()
                 .map(MeetMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
     @Override
-    public Mono<String> addMeetSettle(MeetDomain meetDomain) {
-        // Nota: Cuidado aqui con el orden de switchIfEmpty
-        return selectMeetUser(meetDomain.getIdUser(), meetDomain.getIdMeet())
-                .flatMap(m -> Mono.error(new Exception("Meet ya existe.")))
-                .switchIfEmpty(Mono.defer(() -> {
-                    MeetEntity meet = MeetMapper.INSTANCE.convertDomainToEntityMongo(meetDomain);
-                    meet.setId(UUID.randomUUID().toString());
-                    meet.setActive(true);
-                    meet.setCreated(new Date());
-                    meet.setUpdated(new Date());
-                    return meetRepository
-                            .save(meet);
-                }))
-                .map(mi -> "ok");
+    public Mono<MeetDomain> saveMeetSettle(MeetDomain meet) {
+        return meetRepository.save(MeetMapper.INSTANCE.convertDomainToEntityMongo(meet))
+                .map(MeetMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
     @Override
-    public Mono<String> updateMeetSettle(final MeetDomain meetDomain) {
-        return selectMeetUser(meetDomain.getIdUser(), meetDomain.getIdMeet())
-                .switchIfEmpty(Mono.defer(() -> {
-                    log.debug("Meet no encontrado: {} - {}", meetDomain.getIdUser(), meetDomain.getIdMeet());
-                    return Mono.error(new Exception("Meet no encontrado."));
-                }))
-                .flatMap(meet -> {
-                    meet.setName(meetDomain.getName());
-                    meet.setUpdated(new Date());
-                    return meetRepository.save(meet);
-                })
-                .map(mi -> "ok");
+    public Mono<MeetDomain> updateMeetSettle(MeetDomain meet) {
+        Query query = new Query(Criteria.where("idMeet").is(meet.getIdMeet())
+                .andOperator(Criteria.where("idUser").is(meet.getIdUser())));
+        Update update = new Update();
+
+        update.set("name", meet.getName());
+        update.set("active", meet.getActive());
+        update.set("updated", meet.getUpdated());
+        update.set("owner", meet.getOwner().getName());
+
+        return mongoTemplate.findAndModify(query, update, MeetEntity.class).map(MeetMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
     @Override
-    public Mono<String> closeMeetSettle(String idUser, String idMeet) {
-        return selectMeetUser(idUser, idMeet)
-                .switchIfEmpty(Mono.defer(() -> {
-                    log.debug("Meet no encontrado: {} - {}", idUser, idMeet);
-                    return Mono.error(new Exception("Meet no encontrado."));
-                }))
-                .flatMap(meet -> {
-                    meet.setActive(false);
-                    meet.setUpdated(new Date());
-                    return meetRepository.save(meet);
-                })
-                .map(mi -> "ok");
-    }
-
-    @Override
-    public Mono<Void> removeMeetSettle(String idUser, String idMeet) {
-        return selectMeetUser(idUser, idMeet)
-                .switchIfEmpty(Mono.defer(() -> {
-                    log.debug("Meet no encontrado: {} - {}", idUser, idMeet);
-                    return Mono.error(new Exception("Meet no encontrado."));
-                }))
-                .flatMap(meet -> {
-                    //Cuantos usuarios comparten el mismo encuentro
-                    return meetRepository.findByIdMeet(idMeet)
-                            .collectList()
-                            .flatMap(list -> {
-                                if (list.size() == 1) {
-                                    //Si el meet no esta compartido elimino tambien los pagos asociados al Meet
-                                    //Nota: No me funcionó el findAllAndRemove entonces lo hago a mano.
-                                    selectAllBillByIdMeet(idMeet)
-                                            .collectList()
-                                            .map(listBill -> listBill.parallelStream().map(billRepository::delete));
-                                }
-                                return meetRepository.delete(meet);
-                            });
-                });
+    public Mono<Void> removeMeetSettle(String idMeet, String idUser) {
+        Query query = new Query(Criteria.where("idMeet").is(idMeet)
+                .andOperator(Criteria.where("idUser").is(idUser)));
+        return mongoTemplate.findAndRemove(query, MeetEntity.class).then();
     }
 
     /*------------------- BILL --------------------*/
     @Override
-    public Mono<String> addBillToMeetSettle(final BillDomain billDomain) {
-        return selectBillByIdBillAndIdMeet(billDomain.getIdBill(), billDomain.getIdMeet())
-                .flatMap(m -> Mono.error(new Exception("Bill ya existe.")))
-                .switchIfEmpty(Mono.defer(() -> {
-                    BillEntity bill = BillMapper.INSTANCE.convertDomainToEntityMongo(billDomain);
-                    bill.setCreated(new Date());
-                    bill.setUpdated(new Date());
-                    bill.setOwner(Objects.nonNull(billDomain.getOwner()) ?
-                            billDomain.getOwner().getName() :
-                            billDomain.getListUsersPaid().get(0).getUserPaid().getUser().getName());
-                    return billRepository
-                            .save(bill);
-                }))
-                .map(mi -> "ok");
+    public Mono<BillDomain> saveBillSettle(final BillDomain bill) {
+        return billRepository.save(BillMapper.INSTANCE.convertDomainToEntityMongo(bill)).map(BillMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
     @Override
-    public Mono<String> updateBillToMeetSettle(BillDomain billDomain) {
-        return selectBillByIdBillAndIdMeet(billDomain.getIdBill(), billDomain.getIdMeet())
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new Exception("Bill no existe."))))
-                .flatMap(m -> {
-                    BillEntity bill = BillMapper.INSTANCE.convertDomainToEntityMongo(billDomain);
-                    bill.setReference(billDomain.getReference());
-                    bill.setReceipt(ReceiptContainerMapper.INSTANCE.convertDomainToEntityMongo(billDomain.getReceipt()));
-                    bill.setListUsersPaid(PaymentContainerMapper.INSTANCE.convertDomainToEntityMongo(billDomain.getListUsersPaid()));
-                    bill.setUpdated(new Date());
-                    bill.setOwner(billDomain.getOwner().getName());
-
-                    return billRepository
-                            .save(bill);
-                })
-                .map(mi -> "ok");
+    public Mono<Void> removeBillSettle(String idBill) {
+        Query query = Query.query(Criteria.where("idBill").is(idBill));
+        // Se utiliza .then(); para indicar que debe ejecutarse y no espera ningun resultado devuelto.
+        return mongoTemplate.findAndRemove(query, BillEntity.class).then();
     }
 
     @Override
-    public Mono<String> removeBillToMeetSettle(String idBill) {
-        return billRepository.findByIdBill(idBill)
-                .switchIfEmpty(Mono.defer(() -> Mono.error(new Exception("Bill no existe."))))
-                .flatMap(billRepository::delete)
-                .map(mi -> "ok");
+    public Flux<BillEntity> removeBillsByIdMeetSettle(final String idMeet) {
+        Query query = Query.query(Criteria.where("idMeet").is(idMeet));
+        // Se utiliza .then(); para indicar que debe ejecutarse y no espera ningun resultado.
+        return mongoTemplate.findAllAndRemove(query, BillEntity.class);
     }
 
-    public Flux<BillDomain> selectAllBillSettle(final String idMeet) {
-        return billRepository.findByIdMeet(idMeet)
-                .map(BillMapper.INSTANCE::convertEntityToDomainMongo);
+    @Override
+    public Mono<MeetDomain> selectMeetByIdMeetAndIdUserSettle(final String idMeet, final String idUser) {
+        return meetRepository.findByIdMeetAndIdUser(idMeet, idUser)
+                .map(MeetMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
-    private Mono<MeetEntity> selectMeetUser(final String idUser, final String idMeet) {
-        return meetRepository.findByIdUserAndIdMeet(idUser, idMeet);
+    @Override
+    public Flux<BillDomain> selectBillByIdMeetSettle(final String idMeet) {
+        return billRepository.findByIdMeet(idMeet).map(BillMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
-    private Mono<BillEntity> selectBillByIdBillAndIdMeet(final String idMeet, final String idBill) {
-        return billRepository.findByIdBillAndIdMeet(idMeet, idBill);
+    @Override
+    public Mono<BillDomain> selectBillByIdBillAndIdMeetSettle(final String idBill, final String idMeet) {
+        return billRepository.findByIdBillAndIdMeet(idBill, idMeet).map(BillMapper.INSTANCE::convertEntityToDomainMongo);
     }
 
-    private Flux<BillEntity> selectAllBillByIdMeet(final String idMeet) {
-        return billRepository.findAllByIdMeet(idMeet);
-    }
 
 }

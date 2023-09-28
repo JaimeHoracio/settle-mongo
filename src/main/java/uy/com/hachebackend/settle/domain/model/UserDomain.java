@@ -26,6 +26,4 @@ public class UserDomain {
 
     private List<String> roles;
 
-    private SettleDomain settle;
-
 }
